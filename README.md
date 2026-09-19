@@ -131,8 +131,8 @@ The slug still needs `--name`: it is a URL others will cite. A DOI the
 registries do not know aborts; so does one without a year.
 
 Then replace the `CHANGE-ME` topic as with a thesis. `tft sync <slug>`
-re-reads the registries and refreshes title, authors, year, venue and
-keywords; your own fields and `summary.md` are never touched.
+re-reads the registries and refreshes title, authors, year, venue,
+keywords and published; your own fields and `summary.md` are never touched.
 
 Drop `paper.pdf` in the folder only if the rights allow it — publisher
 PDFs usually may not be hosted, accepted manuscripts often may. A

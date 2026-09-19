@@ -89,18 +89,24 @@ def _pick_date(candidates: list) -> tuple[int | None, str | None]:
         if not parts:
             continue
 
-        year = int(parts[0])
+        try:
+            year = int(parts[0])
 
-        if not MIN_YEAR <= year <= MAX_YEAR:
+            if not MIN_YEAR <= year <= MAX_YEAR:
+                continue
+
+            date = str(year)
+
+            if len(parts) > 1:
+                date += f"-{int(parts[1]):02d}"
+
+            if len(parts) > 2:
+                date += f"-{int(parts[2]):02d}"
+        except (TypeError, ValueError):
+            # A date-part the registry cannot name as a number is its bug, not
+            # data to file: skip the candidate, as we would a year out of
+            # range, rather than crash past the CLI's handler.
             continue
-
-        date = str(year)
-
-        if len(parts) > 1:
-            date += f"-{int(parts[1]):02d}"
-
-        if len(parts) > 2:
-            date += f"-{int(parts[2]):02d}"
 
         return year, date
 
@@ -144,7 +150,7 @@ def _from_crossref(message: dict) -> Record:
         year=year,
         published=published,
         venue=(message.get("container-title") or [None])[0] or None,
-        keywords=tuple(message.get("subject", [])),
+        keywords=tuple(s for s in message.get("subject", []) if s and s.strip()),
         abstract=_strip_markup(message.get("abstract")),
         language=message.get("language"),
     )

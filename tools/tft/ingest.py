@@ -72,7 +72,7 @@ class Ingest:
         return folder
 
     def sync(self, slug: str) -> SyncResult:
-        """Re-pull, re-extract and recompile. Unchanged when Overleaf has not moved."""
+        """Refresh an entry from its source, Overleaf or the DOI registries."""
         entry = self._catalog.find(slug)
 
         if entry.overleaf is not None:

@@ -44,7 +44,7 @@ def _ingest() -> Ingest:
 
 
 def _add(args) -> int:
-    if args.doi:
+    if args.doi is not None:
         if args.type not in (None, PUBLICATION):
             raise TftError("a DOI is not a thesis; --doi implies --type publication")
 
@@ -103,7 +103,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="tft", description="Catalog tooling")
     subs = parser.add_subparsers(dest="command", required=True)
 
-    add = subs.add_parser("add", help="add an entry from an Overleaf project")
+    add = subs.add_parser("add", help="add an entry from an Overleaf project or a DOI")
     src = add.add_mutually_exclusive_group(required=True)
     src.add_argument("--overleaf", metavar="ID", help="Overleaf project id")
     src.add_argument("--doi", metavar="DOI", help="create a publication from its DOI")

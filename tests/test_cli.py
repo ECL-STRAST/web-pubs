@@ -202,3 +202,10 @@ def test_add_doi_reports_registry_error(repo, monkeypatch, capsys):
 
     assert cli.main(["add", "--doi", "10.1109/x", "--name", "x"]) == 1
     assert "check the spelling" in capsys.readouterr().err
+
+
+def test_add_empty_doi_reaches_the_registry_check(repo, capsys):
+    # "" must not fall through to the Overleaf branch: fetch's regex rejects
+    # it as a non-DOI, rather than add() crashing on a None project id.
+    assert cli.main(["add", "--doi", "", "--name", "x"]) == 1
+    assert "is not a DOI" in capsys.readouterr().err

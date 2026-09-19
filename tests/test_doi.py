@@ -127,6 +127,24 @@ def test_record_without_venue_keywords_or_abstract():
     assert rec.published == "2026"
 
 
+def test_non_numeric_date_part_is_skipped():
+    # A registry handing us "oops" where a year belongs must not crash the tool.
+    msg = {"message": {"issued": {"date-parts": [["oops"]]}}}
+    rec = fetch("10.1109/x", get=_get({CROSSREF + "10.1109/x": msg}))
+
+    assert rec.year is None and rec.published is None
+
+
+def test_blank_crossref_subjects_are_dropped():
+    msg = {"message": {
+        "title": ["Bare"], "issued": {"date-parts": [[2026]]},
+        "subject": ["", "ok", "  "],
+    }}
+    rec = fetch("10.1109/x", get=_get({CROSSREF + "10.1109/x": msg}))
+
+    assert rec.keywords == ("ok",)
+
+
 def _stalling_urlopen(monkeypatch, error):
     """urlopen replaced by a stub that notes its kwargs, then stalls."""
     seen = {}
