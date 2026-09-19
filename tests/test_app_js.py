@@ -44,7 +44,7 @@ def test_app_reads_only_fields_the_record_provides(tmp_path):
 def test_app_binds_every_filter_control():
     source = APP_JS.read_text()
 
-    for control in ["q", "year", "degree", "topic", "code", "slides"]:
+    for control in ["q", "year", "type", "degree", "topic", "code", "slides"]:
         assert f'"{control}"' in source or f"'{control}'" in source
 
 
@@ -69,3 +69,16 @@ def test_app_reads_the_score_and_keywords():
 def test_app_searches_the_programme():
     # "biomédica" must find the thesis even though the card never shows it.
     assert "e.programme" in APP_JS.read_text()
+
+
+def test_app_binds_the_type_control():
+    source = APP_JS.read_text()
+
+    assert '"type"' in source or "'type'" in source
+
+
+def test_app_searches_authors_and_venue():
+    source = APP_JS.read_text()
+
+    assert "e.authors" in source
+    assert "e.venue" in source

@@ -437,6 +437,7 @@ PAPER = {
     "language": "en",
     "venue": "IEEE TVCG",
     "doi": "10.1109/TVCG.2026.1234567",
+    "published": "2026-03-14",
 }
 
 
@@ -467,3 +468,40 @@ def test_publication_with_a_pdf_copies_it(repo):
 
     assert (out / "entries" / "2026-x" / "paper.pdf").read_bytes().startswith(b"%PDF")
     assert json.loads((out / "index.json").read_text())[0]["doc"] == "entries/2026-x/paper.pdf"
+
+
+def test_index_page_offers_the_type_filter(repo):
+    _publication(repo)
+
+    page = (_build(repo) / "index.html").read_text()
+
+    assert 'id="type"' in page
+    assert "<option>publication</option>" in page
+
+
+def test_publication_page_links_the_doi_and_has_no_pdf_item(repo):
+    _publication(repo)
+
+    page = (_build(repo) / "entries" / "2026-x" / "index.html").read_text()
+
+    assert 'href="https://doi.org/10.1109/TVCG.2026.1234567"' in page
+    assert "Document (PDF)" not in page
+
+
+def test_publication_page_with_a_pdf_offers_both(repo):
+    _publication(repo, pdf=True)
+
+    page = (_build(repo) / "entries" / "2026-x" / "index.html").read_text()
+
+    assert "Document (PDF)" in page
+    assert 'href="https://doi.org/10.1109/TVCG.2026.1234567"' in page
+
+
+def test_publication_page_shows_authors_venue_and_date(repo):
+    _publication(repo)
+
+    page = (_build(repo) / "entries" / "2026-x" / "index.html").read_text()
+
+    assert "A. Autor, B. Autor" in page
+    assert "IEEE TVCG" in page
+    assert "2026-03-14" in page

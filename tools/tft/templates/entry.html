@@ -29,8 +29,9 @@
     {%- if entry.author_linkedin %}
     <a class="social" href="{{ entry.author_linkedin }}" aria-label="LinkedIn">{% include "icons/linkedin.svg" %}</a>
     {%- endif %}
-    &middot; {{ entry.year }} &middot; {{ entry.type }}
+    &middot; {{ entry.published or entry.year }} &middot; {{ entry.type }}
     {%- if entry.degree %} ({{ entry.degree }}){% endif %}
+    {%- if entry.venue %} &middot; {{ entry.venue }}{% endif %}
     {%- if entry.programme %} &middot; {{ entry.programme|titlecase }}{% endif %}
   </p>
 
@@ -68,8 +69,10 @@
 
   <h2>Files</h2>
   <ul>
-    <li><a href="{{ doc }}">Document (PDF)</a></li>
+    {% if doc %}<li><a href="{{ doc }}">Document (PDF)</a></li>{% endif %}
     {% if entry.slides %}<li><a href="{{ entry.slides }}">Presentation</a></li>{% endif %}
+    {# Built from the validated bare DOI, never from free text. #}
+    {% if doi_url %}<li><a href="{{ doi_url }}">Published version (DOI)</a></li>{% endif %}
   </ul>
 
   {% if entry.repos.code or entry.repos.docs %}

@@ -137,6 +137,7 @@ class Site:
             years=sorted({e.year for e in entries}, reverse=True),
             degrees=sorted({e.degree for e in entries if e.degree}),
             topics=sorted({t for e in entries for t in e.topics}),
+            types=sorted({e.type for e in entries}),
         )
         (out / "index.html").write_text(page, encoding="utf-8")
 
@@ -162,6 +163,7 @@ class Site:
 
         page = self._jinja.get_template("entry.html").render(
             entry=entry, doc=doc if has_doc else None, video=parse_video(entry.video),
+            doi_url=f"{DOI_BASE}{entry.doi}" if entry.doi else None,
             summary=markdown.markdown(entry.summary),
         )
         (folder / "index.html").write_text(page, encoding="utf-8")
