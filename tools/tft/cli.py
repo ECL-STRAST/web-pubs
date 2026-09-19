@@ -6,7 +6,7 @@ from pathlib import Path
 
 from . import config
 from .catalog import Catalog
-from .entry import DEGREES, PUBLICATION, THESIS, TYPES
+from .entry import DEGREES, KINDS, PLACEHOLDER, THESIS
 from .errors import TftError
 from .ingest import Ingest, Overrides
 from .site import SITE, Site
@@ -43,32 +43,24 @@ def _ingest() -> Ingest:
     return Ingest(cfg, Catalog(cfg))
 
 
-def _add(args) -> int:
-    if args.doi is not None:
-        if args.type not in (None, PUBLICATION):
-            raise TftError("a DOI is not a thesis; --doi implies --type publication")
+def _add_thesis(args) -> int:
+    overrides = Overrides(
+        title=args.title, author=args.author, year=args.year, degree=args.degree,
+    )
+    folder = _ingest().add(
+        project_id=args.overleaf, name=args.name, overrides=overrides, type=THESIS,
+    )
+    print(f"created {folder}; now replace the {PLACEHOLDER} topic")
 
-        supplied = [
-            f"--{flag}" for flag, value in (
-                ("title", args.title), ("author", args.author),
-                ("year", args.year), ("degree", args.degree),
-            ) if value is not None
-        ]
+    return 0
 
-        if supplied:
-            raise TftError(f"the registry supplies {' '.join(supplied)}; edit entry.yaml afterwards")
 
-        folder = _ingest().add_from_doi(doi=args.doi, name=args.name)
-    else:
-        overrides = Overrides(
-            title=args.title, author=args.author, year=args.year, degree=args.degree,
-        )
-        folder = _ingest().add(
-            project_id=args.overleaf, name=args.name,
-            overrides=overrides, type=args.type or THESIS,
-        )
+def _add_paper(args) -> int:
+    folder = _ingest().add_from_doi(doi=args.doi, name=args.name, kind=args.kind)
+    print(f"created {folder}; now replace the {PLACEHOLDER} topic")
 
-    print(f"created {folder}; now replace the CHANGE-ME topic")
+    if args.kind is None:
+        print(f"and set the kind: {', '.join(KINDS)}")
 
     return 0
 
@@ -113,18 +105,25 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="tft", description="Catalog tooling")
     subs = parser.add_subparsers(dest="command", required=True)
 
-    add = subs.add_parser("add", help="add an entry from an Overleaf project or a DOI")
-    src = add.add_mutually_exclusive_group(required=True)
-    src.add_argument("--overleaf", metavar="ID", help="Overleaf project id")
-    src.add_argument("--doi", metavar="DOI", help="create a publication from its DOI")
-    add.add_argument("--name", required=True, help="slug without the year, e.g. surname-topic")
-    add.add_argument("--title", default=None, help="override the extracted title")
-    add.add_argument("--author", default=None, help="override the extracted author")
-    add.add_argument("--year", default=None, type=int, help="override the extracted year")
-    add.add_argument("--degree", default=None, choices=DEGREES,
-                     help="override the extracted degree")
-    add.add_argument("--type", default=None, choices=TYPES)
-    add.set_defaults(run=_add)
+    add = subs.add_parser("add", help="add an entry")
+    added = add.add_subparsers(dest="what", required=True)
+
+    thesis = added.add_parser("thesis", help="add a thesis from an Overleaf project")
+    thesis.add_argument("--overleaf", required=True, metavar="ID", help="Overleaf project id")
+    thesis.add_argument("--name", required=True, help="slug without the year, e.g. surname-topic")
+    thesis.add_argument("--title", default=None, help="override the extracted title")
+    thesis.add_argument("--author", default=None, help="override the extracted author")
+    thesis.add_argument("--year", default=None, type=int, help="override the extracted year")
+    thesis.add_argument("--degree", default=None, choices=DEGREES,
+                        help="override the extracted degree")
+    thesis.set_defaults(run=_add_thesis)
+
+    paper = added.add_parser("paper", help="add a paper from its DOI")
+    paper.add_argument("--doi", required=True, metavar="DOI", help="the paper's DOI")
+    paper.add_argument("--name", required=True, help="slug without the year, e.g. surname-topic")
+    paper.add_argument("--kind", default=None, choices=KINDS,
+                       help=f"what the paper is; scaffolded as {PLACEHOLDER} otherwise")
+    paper.set_defaults(run=_add_paper)
 
     sync = subs.add_parser("sync", help="re-pull and recompile an entry")
     sync.add_argument("slug")

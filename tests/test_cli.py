@@ -61,7 +61,7 @@ def test_add_reports_a_missing_token(repo, monkeypatch, capsys):
     monkeypatch.delenv("OVERLEAF_GIT_TOKEN", raising=False)
 
     code = cli.main([
-        "add", "--overleaf", "abc", "--name", "nieves-serrano-biomechanics-db",
+        "add", "thesis", "--overleaf", "abc", "--name", "nieves-serrano-biomechanics-db",
     ])
 
     assert code == 1
@@ -77,7 +77,9 @@ def test_add_builds_the_slug_from_the_name(repo, monkeypatch):
 
     monkeypatch.setattr("tft.ingest.Ingest.add", fake_add)
 
-    code = cli.main(["add", "--overleaf", "abc", "--name", "nieves-serrano-biomechanics-db"])
+    code = cli.main([
+        "add", "thesis", "--overleaf", "abc", "--name", "nieves-serrano-biomechanics-db",
+    ])
 
     assert code == 0
     assert seen["name"] == "nieves-serrano-biomechanics-db"
@@ -118,7 +120,7 @@ def test_add_passes_the_overrides_through(repo, monkeypatch):
     monkeypatch.setattr("tft.ingest.Ingest.add", fake_add)
 
     code = cli.main([
-        "add", "--overleaf", "abc", "--name", "x",
+        "add", "thesis", "--overleaf", "abc", "--name", "x",
         "--title", "T", "--year", "2027",
     ])
 
@@ -126,23 +128,6 @@ def test_add_passes_the_overrides_through(repo, monkeypatch):
     assert seen["overrides"].title == "T"
     assert seen["overrides"].year == 2027
     assert seen["overrides"].author is None
-
-
-def test_add_publication_passes_the_type(repo, monkeypatch):
-    seen = {}
-
-    def fake_add(self, project_id, name, overrides=None, type="thesis"):
-        seen["type"] = type
-        return repo
-
-    monkeypatch.setattr("tft.ingest.Ingest.add", fake_add)
-
-    code = cli.main([
-        "add", "--overleaf", "abc", "--name", "x", "--type", "publication",
-    ])
-
-    assert code == 0
-    assert seen["type"] == "publication"
 
 
 def test_add_reports_an_unreadable_field(repo, monkeypatch, capsys):
@@ -153,80 +138,79 @@ def test_add_reports_an_unreadable_field(repo, monkeypatch, capsys):
 
     monkeypatch.setattr("tft.ingest.Ingest.add", fake_add)
 
-    code = cli.main(["add", "--overleaf", "abc", "--name", "x"])
+    code = cli.main(["add", "thesis", "--overleaf", "abc", "--name", "x"])
 
     assert code == 1
     assert "--title" in capsys.readouterr().err
 
 
-def test_add_doi_implies_publication(repo, monkeypatch):
+def test_add_paper_passes_doi_name_and_no_kind(repo, monkeypatch):
     seen = {}
 
-    def fake_add_from_doi(self, doi, name):
-        seen["doi"] = doi
-        seen["name"] = name
+    def fake_add_from_doi(self, doi, name, kind=None):
+        seen.update(doi=doi, name=name, kind=kind)
         return repo
 
     monkeypatch.setattr("tft.ingest.Ingest.add_from_doi", fake_add_from_doi)
 
-    code = cli.main(["add", "--doi", "10.1109/x", "--name", "autor-paper"])
+    code = cli.main(["add", "paper", "--doi", "10.1109/x", "--name", "autor-paper"])
 
     assert code == 0
-    assert seen == {"doi": "10.1109/x", "name": "autor-paper"}
+    assert seen == {"doi": "10.1109/x", "name": "autor-paper", "kind": None}
 
 
-def test_add_doi_with_type_thesis_is_refused(repo, capsys):
-    code = cli.main(["add", "--doi", "10.1109/x", "--name", "x", "--type", "thesis"])
+def test_add_paper_passes_the_kind(repo, monkeypatch):
+    seen = {}
 
-    assert code == 1
-    assert "thesis" in capsys.readouterr().err
-
-
-def test_add_doi_with_type_publication_is_allowed(repo, monkeypatch):
-    def fake_add_from_doi(self, doi, name):
+    def fake_add_from_doi(self, doi, name, kind=None):
+        seen["kind"] = kind
         return repo
 
     monkeypatch.setattr("tft.ingest.Ingest.add_from_doi", fake_add_from_doi)
 
-    assert cli.main(["add", "--doi", "10.1109/x", "--name", "x",
-                     "--type", "publication"]) == 0
+    code = cli.main([
+        "add", "paper", "--doi", "10.1109/x", "--name", "x", "--kind", "journal",
+    ])
+
+    assert code == 0
+    assert seen["kind"] == "journal"
 
 
 @pytest.mark.parametrize("flag,value", [
     ("--title", "T"), ("--author", "A"), ("--year", "2025"), ("--degree", "bachelor"),
 ])
-def test_add_doi_refuses_the_overleaf_overrides(repo, capsys, flag, value):
-    # The registry supplies them; silently dropping the flag would lie.
-    code = cli.main(["add", "--doi", "10.1109/x", "--name", "x", flag, value])
-
-    assert code == 1
-    assert flag in capsys.readouterr().err
-
-
-def test_add_refuses_overleaf_and_doi_together(repo):
+def test_add_paper_refuses_the_thesis_flags(repo, capsys, flag, value):
+    # The registry supplies them; the paper parser does not even accept them.
     with pytest.raises(SystemExit):
-        cli.main(["add", "--overleaf", "abc", "--doi", "10.1109/x", "--name", "x"])
+        cli.main(["add", "paper", "--doi", "10.1109/x", "--name", "x", flag, value])
 
 
-def test_add_requires_one_source(repo):
+def test_add_thesis_refuses_the_doi(repo):
     with pytest.raises(SystemExit):
-        cli.main(["add", "--name", "x"])
+        cli.main(["add", "thesis", "--doi", "10.1109/x", "--name", "x"])
 
 
-def test_add_doi_reports_registry_error(repo, monkeypatch, capsys):
+def test_add_requires_its_source(repo):
+    with pytest.raises(SystemExit):
+        cli.main(["add", "thesis", "--name", "x"])
+
+    with pytest.raises(SystemExit):
+        cli.main(["add", "paper", "--name", "x"])
+
+
+def test_add_paper_reports_registry_error(repo, monkeypatch, capsys):
     from tft.errors import RegistryError
 
-    def fake(self, doi, name):
+    def fake(self, doi, name, kind=None):
         raise RegistryError("no registry knows 10.1109/x; check the spelling")
 
     monkeypatch.setattr("tft.ingest.Ingest.add_from_doi", fake)
 
-    assert cli.main(["add", "--doi", "10.1109/x", "--name", "x"]) == 1
+    assert cli.main(["add", "paper", "--doi", "10.1109/x", "--name", "x"]) == 1
     assert "check the spelling" in capsys.readouterr().err
 
 
 def test_add_empty_doi_reaches_the_registry_check(repo, capsys):
-    # "" must not fall through to the Overleaf branch: fetch's regex rejects
-    # it as a non-DOI, rather than add() crashing on a None project id.
-    assert cli.main(["add", "--doi", "", "--name", "x"]) == 1
+    # "" must not skip the registry: fetch's regex rejects it as a non-DOI.
+    assert cli.main(["add", "paper", "--doi", "", "--name", "x"]) == 1
     assert "is not a DOI" in capsys.readouterr().err

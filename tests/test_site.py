@@ -77,6 +77,7 @@ def test_index_json_matches_the_golden_record(repo):
         "authors": ["Silvia Nieves Serrano"],
         "year": 2027,
         "degree": "bachelor",
+        "kind": None,
         "programme": "GRADO EN INGENIERÍA BIOMÉDICA",
         "venue": None,
         "doi": None,
@@ -433,6 +434,7 @@ PAPER = {
     "title": "Motion capture in the wild",
     "authors": ["A. Autor", "B. Autor"],
     "year": 2026,
+    "kind": "journal",
     "topics": ["biomechanics"],
     "language": "en",
     "venue": "IEEE TVCG",
@@ -441,10 +443,12 @@ PAPER = {
 }
 
 
-def _publication(repo, slug="2026-x", pdf=False):
+def _publication(repo, slug="2026-x", pdf=False, kind=None):
+    data = PAPER if kind is None else PAPER | {"kind": kind}
+
     folder = repo / "content" / "publications" / slug
     folder.mkdir(parents=True)
-    (folder / "entry.yaml").write_text(yaml.safe_dump(PAPER, sort_keys=False))
+    (folder / "entry.yaml").write_text(yaml.safe_dump(data, sort_keys=False))
     (folder / "summary.md").write_text("Text.\n")
 
     if pdf:
@@ -470,13 +474,46 @@ def test_publication_with_a_pdf_copies_it(repo):
     assert json.loads((out / "index.json").read_text())[0]["doc"] == "entries/2026-x/paper.pdf"
 
 
-def test_index_page_offers_the_type_filter(repo):
+def test_index_page_offers_the_group_buttons(repo):
+    _entry(repo, "2027-x", MINIMAL)
     _publication(repo)
 
     page = (_build(repo) / "index.html").read_text()
 
-    assert 'id="type"' in page
-    assert "<option>publication</option>" in page
+    assert 'id="group-thesis"' in page
+    assert 'id="group-publication"' in page
+    assert "Theses (1)" in page
+    assert "Publications (1)" in page
+
+
+def test_index_page_has_no_type_select(repo):
+    _entry(repo, "2027-x", MINIMAL)
+    _publication(repo)
+
+    assert 'id="type"' not in (_build(repo) / "index.html").read_text()
+
+
+def test_index_page_offers_the_kind_filter(repo):
+    _publication(repo)
+
+    page = (_build(repo) / "index.html").read_text()
+
+    assert 'id="kind"' in page
+    assert "<option>journal</option>" in page
+
+
+def test_placeholder_kind_is_not_a_filter_option(repo):
+    _publication(repo, kind="CHANGE-ME")
+
+    assert "<option>CHANGE-ME</option>" not in (_build(repo) / "index.html").read_text()
+
+
+def test_publication_record_carries_the_kind(repo):
+    _publication(repo)
+
+    record = json.loads((_build(repo) / "index.json").read_text())[0]
+
+    assert record["kind"] == "journal"
 
 
 def test_publication_page_links_the_doi_and_has_no_pdf_item(repo):
@@ -505,3 +542,20 @@ def test_publication_page_shows_authors_venue_and_date(repo):
     assert "A. Autor, B. Autor" in page
     assert "IEEE TVCG" in page
     assert "2026-03-14" in page
+
+
+def test_publication_page_shows_the_kind(repo):
+    _publication(repo)
+
+    page = (_build(repo) / "entries" / "2026-x" / "index.html").read_text()
+
+    assert "(journal)" in page
+
+
+def test_entry_page_topic_link_carries_the_group(repo):
+    # A topic click from a paper must land on Publications, not Theses.
+    _publication(repo)
+
+    page = (_build(repo) / "entries" / "2026-x" / "index.html").read_text()
+
+    assert "?group=publication&topic=biomechanics" in page

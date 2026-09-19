@@ -44,7 +44,7 @@ def test_app_reads_only_fields_the_record_provides(tmp_path):
 def test_app_binds_every_filter_control():
     source = APP_JS.read_text()
 
-    for control in ["q", "year", "type", "degree", "topic", "code", "slides"]:
+    for control in ["q", "year", "degree", "kind", "topic", "code", "slides"]:
         assert f'"{control}"' in source or f"'{control}'" in source
 
 
@@ -71,10 +71,29 @@ def test_app_searches_the_programme():
     assert "e.programme" in APP_JS.read_text()
 
 
-def test_app_binds_the_type_control():
+def test_app_binds_the_group_buttons():
     source = APP_JS.read_text()
 
-    assert '"type"' in source or "'type'" in source
+    assert 'const GROUPS = ["thesis", "publication"]' in source
+    assert "group-${g}" in source
+
+
+def test_app_keeps_the_group_in_the_url():
+    # Shared links and topic clicks must land on the same group.
+    source = APP_JS.read_text()
+
+    assert "group=" in source
+
+
+def test_app_honours_a_legacy_type_param():
+    # ?type=publication predates the group buttons: it names a group.
+    assert 'params.get("type")' in APP_JS.read_text()
+
+
+def test_app_ignores_a_hidden_facet():
+    # A hidden degree/kind select belongs to the other group and
+    # filtering by it would empty the list invisibly.
+    assert "node.hidden" in APP_JS.read_text()
 
 
 def test_app_searches_authors_and_venue():

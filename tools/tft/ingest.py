@@ -110,7 +110,7 @@ class Ingest:
 
         return SyncResult(changed=True, warnings=_year_drift(entry.year, meta.year, entry.slug))
 
-    def add_from_doi(self, doi: str, name: str) -> Path:
+    def add_from_doi(self, doi: str, name: str, kind: str | None = None) -> Path:
         """Create a publication entry from the registries alone: no compile,
         no mirror, no PDF. What is shareable is a human call."""
         record = self._fetch_doi(doi)
@@ -121,7 +121,7 @@ class Ingest:
         return self._catalog.create(
             slug=f"{record.year}-{name}", type=PUBLICATION, year=record.year,
             title=record.title, authors=record.authors, venue=record.venue,
-            doi=doi, published=record.published, keywords=record.keywords,
+            kind=kind, doi=doi, published=record.published, keywords=record.keywords,
             language=record.language or "en",
             summary=record.abstract or STUB_SUMMARY,
         )

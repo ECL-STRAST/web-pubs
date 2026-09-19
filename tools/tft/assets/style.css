@@ -20,6 +20,20 @@ body {
 h1 { font-size: 1.6rem; margin-bottom: .2rem; }
 .meta, #count { color: var(--dim); font-size: .9rem; }
 
+/* The split of the catalog, right under the rule and above the filters. */
+#groups { display: flex; gap: .5rem; margin: 1rem 0 0; }
+#groups button {
+  padding: .4rem .9rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: none;
+  font: inherit; font-size: .9rem;
+  color: var(--dim);
+  cursor: pointer;
+}
+#groups button:hover { color: var(--ecl-blue); border-color: var(--ecl-blue); }
+#groups button.active { background: var(--ecl-blue); border-color: var(--ecl-blue); color: #fff; }
+
 #filters { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.5rem 0 1rem; }
 #filters input[type=search] { flex: 1 1 16rem; }
 #filters input, #filters select { padding: .4rem; border: 1px solid var(--line); }

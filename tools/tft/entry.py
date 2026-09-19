@@ -12,6 +12,13 @@ TYPES = (THESIS, PUBLICATION)
 
 DEGREES = ("bachelor", "master", "phd")
 
+# What a paper is, as much a category for a publication as DEGREES is
+# for a thesis.
+KINDS = ("conference", "journal", "poster", "workshop", "book_chapter", "book", "preprint")
+
+# What `add` scaffolds in place of kind; validate rejects it until replaced.
+PLACEHOLDER = "CHANGE-ME"
+
 YOUTUBE = "youtube"
 VIMEO = "vimeo"
 
@@ -43,7 +50,7 @@ DOC_NAME = {THESIS: "thesis.pdf", PUBLICATION: "paper.pdf"}
 
 MANDATORY = ("type", "title", "authors", "year", "topics", "language")
 OPTIONAL = (
-    "degree", "programme", "venue", "supervisors", "overleaf", "repos",
+    "degree", "kind", "programme", "venue", "supervisors", "overleaf", "repos",
     "slides", "keywords", "score", "honours", "photo", "image", "video",
     "author_github", "author_linkedin", "doi", "published",
 )
@@ -88,6 +95,7 @@ class Entry:
     topics: tuple[str, ...]
     language: str
     degree: str | None = None
+    kind: str | None = None
     programme: str | None = None
     venue: str | None = None
     doi: str | None = None
@@ -112,15 +120,21 @@ def from_dict(slug: str, data: dict) -> Entry:
     _reject_unknown(data)
     _require(data, MANDATORY)
 
-    kind = _one_of(data, "type", TYPES)
+    entry_type = _one_of(data, "type", TYPES)
 
-    # A thesis has a degree; a publication will have a venue instead.
-    if kind == THESIS:
+    # A thesis has a degree; a publication has a kind.
+    if entry_type == THESIS:
         _require(data, ("degree",))
+    else:
+        _require(data, ("kind",))
 
     # Degree enum is unconditional: if present, must be valid.
     if "degree" in data:
         _one_of(data, "degree", DEGREES)
+
+    # kind accepts the scaffolded placeholder; validate reports it.
+    if "kind" in data and data["kind"] != PLACEHOLDER:
+        _one_of(data, "kind", KINDS)
 
     _check_types(data)
     _check_authors(data)
@@ -140,13 +154,14 @@ def from_dict(slug: str, data: dict) -> Entry:
 
     return Entry(
         slug=slug,
-        type=kind,
+        type=entry_type,
         title=data["title"],
         authors=tuple(data["authors"]),
         year=data["year"],
         topics=tuple(data["topics"]),
         language=data["language"],
         degree=data.get("degree"),
+        kind=data.get("kind"),
         programme=data.get("programme"),
         venue=data.get("venue"),
         doi=data.get("doi"),
@@ -176,6 +191,7 @@ def to_dict(entry: Entry) -> dict:
     }
 
     _put(out, "degree", entry.degree)
+    _put(out, "kind", entry.kind)
     _put(out, "programme", entry.programme)
     _put(out, "venue", entry.venue)
     _put(out, "doi", entry.doi)

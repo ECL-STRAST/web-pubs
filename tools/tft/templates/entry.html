@@ -31,6 +31,7 @@
     {%- endif %}
     &middot; {{ entry.published or entry.year }} &middot; {{ entry.type }}
     {%- if entry.degree %} ({{ entry.degree }}){% endif %}
+    {%- if entry.kind %} ({{ entry.kind }}){% endif %}
     {%- if entry.venue %} &middot; {{ entry.venue }}{% endif %}
     {%- if entry.programme %} &middot; {{ entry.programme|titlecase }}{% endif %}
   </p>
@@ -57,7 +58,8 @@
   <p class="meta">Supervised by {{ entry.supervisors|join(", ") }}</p>
   {% endif %}
 
-  <p class="topics">{% for topic in entry.topics %}<a href="../../?topic={{ topic|urlencode }}">{{ topic }}</a>{% endfor %}</p>
+  {# The group keeps the reader on the same half of the catalog. #}
+  <p class="topics">{% for topic in entry.topics %}<a href="../../?group={{ entry.type }}&topic={{ topic|urlencode }}">{{ topic }}</a>{% endfor %}</p>
 
   {% if entry.keywords %}
   <p class="keywords">{% for word in entry.keywords %}<span>{{ word }}</span>{% endfor %}</p>

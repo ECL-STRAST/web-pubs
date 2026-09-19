@@ -12,7 +12,8 @@ what makes an entry public; there is no flag to get wrong.
 ## Layout
 
     content/theses/<year>-<slug>/   entry.yaml, summary.md, thesis.pdf, slides.pdf
-    content/publications/<year>-<slug>/ same shape; paper.pdf only if shareable
+    content/publications/<year>-<slug>/ same shape, kind instead of degree;
+                                      paper.pdf only if shareable
     taxonomy/topics.yaml            the controlled topic vocabulary
     tools/tft/                      the tooling
     site/                           build output, gitignored
@@ -44,9 +45,9 @@ On Debian/Ubuntu:
 `tft` compiles with `-shell-escape` for `minted`, which lets the document
 run shell commands during compilation. Only compile sources you trust.
 
-## Adding an entry
+## Adding a thesis
 
-    tft add --overleaf <project-id> --name nieves-serrano-biomechanics-db
+    tft add thesis --overleaf <project-id> --name nieves-serrano-biomechanics-db
 
 Title, author, year, degree, programme, supervisors, summary and keywords
 are read from the LaTeX source. The year becomes the slug's prefix, so
@@ -84,7 +85,8 @@ change to an existing one if you want the GitHub pages to update.
 
 | Field | Notes |
 |---|---|
-| `topics` | from `taxonomy/topics.yaml`; the only filter facet |
+| `topics` | from `taxonomy/topics.yaml`; a filter facet |
+| `kind` | papers only; from the list above; the publications' filter facet |
 | `score` | 0 to 10 |
 | `honours` | `true` for Matrícula de Honor; needs a `score` |
 | `photo` | the author's portrait, a file in the entry folder, e.g. `photo.jpg` |
@@ -121,14 +123,19 @@ thesis's year changes, `sync` updates the field and warns, but does not
 rename the folder: the slug is an identifier and shared URLs must keep
 working.
 
-### Adding a paper
+## Adding a paper
 
-    tft add --doi 10.1109/TVCG.2026.1234567 --name autor-mocap
+    tft add paper --doi 10.1109/TVCG.2026.1234567 --name autor-mocap
 
 Title, authors in order, year, venue, keywords and the abstract (when
 the registry carries one) come from CrossRef, falling back to DataCite.
 The slug still needs `--name`: it is a URL others will cite. A DOI the
 registries do not know aborts; so does one without a year.
+
+A paper has a `kind` — `conference`, `journal`, `poster`, `workshop`,
+`book_chapter`, `book` or `preprint` — as much its category as the
+degree is a thesis's. Pass `--kind journal` or replace the `CHANGE-ME`
+the command scaffolds; `validate` reports it until you do.
 
 Then replace the `CHANGE-ME` topic as with a thesis. `tft sync <slug>`
 re-reads the registries and refreshes title, authors, year, venue,

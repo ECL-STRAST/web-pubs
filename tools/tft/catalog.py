@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 from . import store
 from .config import Config
-from .entry import DOC_NAME, THESIS, Entry, from_dict
+from .entry import DOC_NAME, KINDS, PLACEHOLDER, PUBLICATION, THESIS, Entry, from_dict
 from .errors import ConfigError, MissingField, SchemaError
 
 CONTENT = "content"
@@ -39,7 +39,7 @@ class Catalog:
     def dir_for(self, entry: Entry) -> Path:
         return self._content(COLLECTIONS[entry.type]) / entry.slug
 
-    def create(self, slug, type, year, title, authors, degree=None,
+    def create(self, slug, type, year, title, authors, degree=None, kind=None,
                programme=None, supervisors=(), keywords=(), summary=STUB_SUMMARY,
                venue=None, doi=None, published=None, language="en") -> Path:
         """Scaffold a new entry folder with stubs for the human to fill in."""
@@ -50,7 +50,7 @@ class Catalog:
 
         data = {
             "type": type, "title": title, "authors": list(authors), "year": year,
-            "topics": ["CHANGE-ME"], "language": language,
+            "topics": [PLACEHOLDER], "language": language,
         }
 
         for name, value in (("venue", venue), ("doi", doi), ("published", published)):
@@ -59,6 +59,11 @@ class Catalog:
 
         if degree is not None:
             data["degree"] = degree
+
+        # kind is as essential to a paper as degree is to a thesis: scaffold
+        # a placeholder validate will report until the human fixes it.
+        if type == PUBLICATION:
+            data["kind"] = kind or PLACEHOLDER
 
         if programme is not None:
             data["programme"] = programme
@@ -104,6 +109,9 @@ class Catalog:
             for topic in entry.topics
             if topic not in vocabulary
         ]
+
+        if entry.kind == PLACEHOLDER:
+            found.append(f"{folder.name}: kind is still {PLACEHOLDER}; pick one of {', '.join(KINDS)}")
 
         for name in self._required_files(entry):
             if not store.exists(folder / name):

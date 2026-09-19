@@ -64,13 +64,17 @@ def test_thesis_requires_a_degree():
 
 
 def test_publication_does_not_require_a_degree():
-    data = {k: v for k, v in MINIMAL.items() if k != "degree"} | {"type": "publication"}
+    data = {k: v for k, v in MINIMAL.items() if k != "degree"} | {
+        "type": "publication", "kind": "journal",
+    }
 
     assert entry.from_dict("2027-x", data).degree is None
 
 
 def test_publication_with_invalid_degree_is_rejected():
-    data = {k: v for k, v in MINIMAL.items() if k != "type"} | {"type": "publication", "degree": "postdoc"}
+    data = {k: v for k, v in MINIMAL.items() if k != "type"} | {
+        "type": "publication", "degree": "postdoc", "kind": "journal",
+    }
 
     with pytest.raises(BadValue, match="degree"):
         entry.from_dict("2027-x", data)
@@ -89,6 +93,48 @@ def test_unknown_type_is_rejected():
 def test_unknown_degree_is_rejected():
     with pytest.raises(BadValue, match="degree"):
         entry.from_dict("2027-x", MINIMAL | {"degree": "postdoc"})
+
+
+PAPER_MINIMAL = {
+    "type": "publication",
+    "title": "Motion capture in the wild",
+    "authors": ["A. Autor"],
+    "year": 2026,
+    "kind": "journal",
+    "topics": ["biomechanics"],
+    "language": "en",
+}
+
+
+def test_publication_requires_a_kind():
+    data = {k: v for k, v in PAPER_MINIMAL.items() if k != "kind"}
+
+    with pytest.raises(MissingField, match="kind"):
+        entry.from_dict("2026-x", data)
+
+
+def test_thesis_does_not_require_a_kind():
+    assert entry.from_dict("2027-x", MINIMAL).kind is None
+
+
+def test_unknown_kind_is_rejected():
+    with pytest.raises(BadValue, match="kind"):
+        entry.from_dict("2026-x", PAPER_MINIMAL | {"kind": "editorial"})
+
+
+def test_kind_round_trips():
+    parsed = entry.from_dict("2026-x", PAPER_MINIMAL)
+
+    assert parsed.kind == "journal"
+    assert entry.to_dict(parsed) == PAPER_MINIMAL
+
+
+def test_placeholder_kind_survives_parsing():
+    # `add paper` scaffolds kind like topics: a placeholder, rejected by
+    # validate until a human replaces it.
+    parsed = entry.from_dict("2026-x", PAPER_MINIMAL | {"kind": entry.PLACEHOLDER})
+
+    assert parsed.kind == entry.PLACEHOLDER
 
 
 def test_year_must_be_an_integer():

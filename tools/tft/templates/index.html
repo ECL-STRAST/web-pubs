@@ -13,6 +13,12 @@
   <h1>Theses &amp; publications</h1>
 </header>
 <div class="rule"></div>
+
+<nav id="groups" aria-label="Groups">
+  <button id="group-thesis" class="group active">Theses ({{ n_theses }})</button>
+  <button id="group-publication" class="group">Publications ({{ n_publications }})</button>
+</nav>
+
 <p>{{ entries|length }} entries from the research group.</p>
 
 <form id="filters" aria-label="Filters">
@@ -20,11 +26,11 @@
   <select id="year"><option value="">Any year</option>
     {% for year in years %}<option>{{ year }}</option>{% endfor %}
   </select>
-  <select id="type"><option value="">Any type</option>
-    {% for type in types %}<option>{{ type }}</option>{% endfor %}
-  </select>
   <select id="degree"><option value="">Any degree</option>
     {% for degree in degrees %}<option>{{ degree }}</option>{% endfor %}
+  </select>
+  <select id="kind" hidden><option value="">Any kind</option>
+    {% for kind in kinds %}<option>{{ kind }}</option>{% endfor %}
   </select>
   <select id="topic"><option value="">Any topic</option>
     {% for topic in topics %}<option>{{ topic }}</option>{% endfor %}

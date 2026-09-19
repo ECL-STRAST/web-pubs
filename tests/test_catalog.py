@@ -201,6 +201,7 @@ PAPER = {
     "title": "Motion capture in the wild",
     "authors": ["A. Autor", "B. Autor"],
     "year": 2026,
+    "kind": "journal",
     "topics": ["vr"],
     "language": "en",
     "venue": "IEEE TVCG",
@@ -230,3 +231,33 @@ def test_publication_with_a_pdf_on_disk_is_no_problem(repo):
     _publication(repo, "2026-x", pdf=True)
 
     assert _catalog(repo).problems() == []
+
+
+def test_publication_without_a_kind_is_a_problem(repo):
+    _publication(repo, "2026-x", data={k: v for k, v in PAPER.items() if k != "kind"})
+
+    assert any("kind" in p for p in _catalog(repo).problems())
+
+
+def test_create_scaffolds_a_placeholder_kind(repo):
+    cat = _catalog(repo)
+
+    folder = cat.create(
+        slug="2026-x", type="publication", year=2026,
+        title="t", authors=["a"], venue="IEEE TVCG",
+    )
+    data = yaml.safe_load((folder / "entry.yaml").read_text())
+
+    assert data["kind"] == "CHANGE-ME"
+    assert any("kind" in p for p in cat.problems())
+
+
+def test_create_with_a_kind_leaves_nothing_to_fix(repo):
+    cat = _catalog(repo)
+
+    cat.create(
+        slug="2026-x", type="publication", year=2026,
+        title="t", authors=["a"], venue="IEEE TVCG", kind="journal",
+    )
+
+    assert not any("kind" in p for p in cat.problems())

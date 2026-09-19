@@ -476,8 +476,10 @@ def _ingest_doi(repo, record):
     return Ingest(cfg, Catalog(cfg), fetch_doi=lambda doi: record)
 
 
-def _add_doi(repo, record=None):
-    return _ingest_doi(repo, record or _paper_record()).add_from_doi(DOI_STR, "autor-mocap")
+def _add_doi(repo, record=None, kind=None):
+    return _ingest_doi(repo, record or _paper_record()).add_from_doi(
+        DOI_STR, "autor-mocap", kind=kind,
+    )
 
 
 def test_add_from_doi_creates_the_publication(repo):
@@ -492,7 +494,14 @@ def test_add_from_doi_creates_the_publication(repo):
     assert data["doi"] == DOI_STR
     assert data["published"] == "2026-03-14"
     assert data["keywords"] == ["mocap"]
+    assert data["kind"] == "CHANGE-ME"
     assert "paper.pdf" not in data
+
+
+def test_add_from_doi_with_a_kind_records_it(repo):
+    folder = _add_doi(repo, kind="journal")
+
+    assert yaml.safe_load((folder / "entry.yaml").read_text())["kind"] == "journal"
 
 
 def test_add_from_doi_seeds_the_summary_from_the_abstract(repo):
@@ -567,7 +576,7 @@ def test_sync_of_an_entry_with_neither_source_names_what_is_missing(repo):
     folder.mkdir(parents=True)
     (folder / "entry.yaml").write_text(yaml.safe_dump({
         "type": "publication", "title": "t", "authors": ["a"], "year": 2026,
-        "topics": ["vr"], "language": "en",
+        "kind": "journal", "topics": ["vr"], "language": "en",
     }, sort_keys=False))
     (folder / "summary.md").write_text("Text.\n")
 

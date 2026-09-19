@@ -11,7 +11,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from . import store
 from .catalog import Catalog
 from .config import Config
-from .entry import DOI_BASE, DOC_NAME, THESIS, Entry, parse_video
+from .entry import DOI_BASE, DOC_NAME, PLACEHOLDER, PUBLICATION, THESIS, Entry, parse_video
 from .errors import BadValue, UnsafeOutputDir
 
 SITE = "site"
@@ -49,6 +49,7 @@ def record(entry: Entry, has_doc: bool) -> dict:
         "authors": list(entry.authors),
         "year": entry.year,
         "degree": entry.degree,
+        "kind": entry.kind,
         "programme": entry.programme,
         "venue": entry.venue,
         "doi": f"{DOI_BASE}{entry.doi}" if entry.doi else None,
@@ -136,8 +137,11 @@ class Site:
             entries=entries,
             years=sorted({e.year for e in entries}, reverse=True),
             degrees=sorted({e.degree for e in entries if e.degree}),
+            # The placeholder is a to-do, not a facet: never a filter option.
+            kinds=sorted({e.kind for e in entries if e.kind and e.kind != PLACEHOLDER}),
             topics=sorted({t for e in entries for t in e.topics}),
-            types=sorted({e.type for e in entries}),
+            n_theses=sum(e.type == THESIS for e in entries),
+            n_publications=sum(e.type == PUBLICATION for e in entries),
         )
         (out / "index.html").write_text(page, encoding="utf-8")
 
