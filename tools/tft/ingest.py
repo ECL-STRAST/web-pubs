@@ -8,6 +8,7 @@ from pathlib import Path
 
 from . import latex, overleaf, store, tex
 from .catalog import COLLECTIONS, STUB_SUMMARY, Catalog
+from .doi import fetch as fetch_registry
 from .config import Config
 from .entry import DOC_NAME, PUBLICATION, THESIS, Entry, Overleaf
 from .errors import ExtractError
@@ -39,11 +40,13 @@ class SyncResult:
 
 
 class Ingest:
-    def __init__(self, cfg: Config, catalog: Catalog, fetch=overleaf.fetch, build=latex.build):
+    def __init__(self, cfg: Config, catalog: Catalog, fetch=overleaf.fetch,
+                 build=latex.build, fetch_doi=fetch_registry):
         self._cfg = cfg
         self._catalog = catalog
         self._fetch = fetch
         self._build = build
+        self._fetch_doi = fetch_doi
 
     def add(self, project_id, name, overrides=Overrides(), type=THESIS) -> Path:
         """Create a new entry from an Overleaf project."""
@@ -72,9 +75,15 @@ class Ingest:
         """Re-pull, re-extract and recompile. Unchanged when Overleaf has not moved."""
         entry = self._catalog.find(slug)
 
-        if entry.overleaf is None:
-            raise FileNotFoundError(f"{slug} has no overleaf.project_id to sync")
+        if entry.overleaf is not None:
+            return self._sync_overleaf(entry)
 
+        if entry.doi is not None:
+            return self._sync_doi(entry)
+
+        raise FileNotFoundError(f"{slug} has neither overleaf.project_id nor doi to sync")
+
+    def _sync_overleaf(self, entry: Entry) -> SyncResult:
         project_id = entry.overleaf.project_id
         work = self._cfg.work / project_id
         sha = self._fetch(project_id, work)
@@ -99,7 +108,47 @@ class Ingest:
         if meta.abstract:
             store.write_summary(folder, meta.abstract)
 
-        return SyncResult(changed=True, warnings=_year_drift(entry.year, meta.year, slug))
+        return SyncResult(changed=True, warnings=_year_drift(entry.year, meta.year, entry.slug))
+
+    def add_from_doi(self, doi: str, name: str) -> Path:
+        """Create a publication entry from the registries alone: no compile,
+        no mirror, no PDF. What is shareable is a human call."""
+        record = self._fetch_doi(doi)
+
+        if record.year is None:
+            raise ExtractError(f"{doi}: the registry reports no year; the slug needs one")
+
+        return self._catalog.create(
+            slug=f"{record.year}-{name}", type=PUBLICATION, year=record.year,
+            title=record.title, authors=record.authors, venue=record.venue,
+            doi=doi, published=record.published, keywords=record.keywords,
+            language=record.language or "en",
+            summary=record.abstract or STUB_SUMMARY,
+        )
+
+    def _sync_doi(self, entry: Entry) -> SyncResult:
+        record = self._fetch_doi(entry.doi)
+        refreshed = dataclasses.replace(
+            entry,
+            title=record.title or entry.title,
+            authors=record.authors or entry.authors,
+            year=record.year or entry.year,
+            venue=record.venue or entry.venue,
+            keywords=record.keywords or entry.keywords,
+            published=record.published or entry.published,
+        )
+        changed = any(
+            getattr(refreshed, name) != getattr(entry, name)
+            for name in REGISTRY_FIELDS
+        )
+
+        if changed:
+            self._catalog.save(refreshed)
+
+        return SyncResult(
+            changed=changed,
+            warnings=_year_drift(entry.year, refreshed.year, entry.slug),
+        )
 
     def _compile(self, work: Path, main: str | None) -> Path:
         root = work / main if main else latex.find_main(work)
@@ -169,6 +218,11 @@ class Ingest:
 
 # Fields the CLI can supply; the rest must be fixed in the LaTeX itself.
 OVERRIDABLE = ("title", "author", "year", "degree")
+
+
+# A registry that loses a field must not blank the entry: only what it
+# reports wins.
+REGISTRY_FIELDS = ("title", "authors", "year", "venue", "keywords", "published")
 
 
 def _degree_for(type: str, meta: tex.Meta) -> str | None:

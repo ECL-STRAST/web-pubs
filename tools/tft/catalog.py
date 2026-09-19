@@ -40,7 +40,8 @@ class Catalog:
         return self._content(COLLECTIONS[entry.type]) / entry.slug
 
     def create(self, slug, type, year, title, authors, degree=None,
-               programme=None, supervisors=(), keywords=(), summary=STUB_SUMMARY) -> Path:
+               programme=None, supervisors=(), keywords=(), summary=STUB_SUMMARY,
+               venue=None, doi=None, published=None, language="en") -> Path:
         """Scaffold a new entry folder with stubs for the human to fill in."""
         folder = self._content(COLLECTIONS[type]) / slug
 
@@ -49,8 +50,12 @@ class Catalog:
 
         data = {
             "type": type, "title": title, "authors": list(authors), "year": year,
-            "topics": ["CHANGE-ME"], "language": "en",
+            "topics": ["CHANGE-ME"], "language": language,
         }
+
+        for name, value in (("venue", venue), ("doi", doi), ("published", published)):
+            if value is not None:
+                data[name] = value
 
         if degree is not None:
             data["degree"] = degree

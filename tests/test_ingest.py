@@ -453,3 +453,117 @@ def test_sync_warns_but_does_not_rename_on_a_year_change(repo):
     assert folder.name == "2027-nieves-serrano-biomechanics-db"
     assert folder.is_dir()
     assert any("2028" in w for w in result.warnings)
+
+
+from tft.doi import Record
+
+DOI_STR = "10.1109/TVCG.2026.1234567"
+
+
+def _paper_record(**over):
+    base = dict(
+        title="Motion capture in the wild", authors=("A. Autor", "B. Autor"),
+        year=2026, published="2026-03-14", venue="IEEE TVCG",
+        keywords=("mocap",), abstract="A registry abstract.", language="en",
+    ) | over
+
+    return Record(**base)
+
+
+def _ingest_doi(repo, record):
+    """An Ingest whose DOI driver is stubbed; the Overleaf ones stay real."""
+    cfg = config.load(repo)
+
+    return Ingest(cfg, Catalog(cfg), fetch_doi=lambda doi: record)
+
+
+def _add_doi(repo, record=None):
+    return _ingest_doi(repo, record or _paper_record()).add_from_doi(DOI_STR, "autor-mocap")
+
+
+def test_add_from_doi_creates_the_publication(repo):
+    folder = _add_doi(repo)
+
+    assert folder == repo / "content" / "publications" / "2026-autor-mocap"
+    data = yaml.safe_load((folder / "entry.yaml").read_text())
+
+    assert data["type"] == "publication"
+    assert data["authors"] == ["A. Autor", "B. Autor"]
+    assert data["venue"] == "IEEE TVCG"
+    assert data["doi"] == DOI_STR
+    assert data["published"] == "2026-03-14"
+    assert data["keywords"] == ["mocap"]
+    assert "paper.pdf" not in data
+
+
+def test_add_from_doi_seeds_the_summary_from_the_abstract(repo):
+    folder = _add_doi(repo)
+
+    assert (folder / "summary.md").read_text() == "A registry abstract."
+
+
+def test_add_from_doi_without_abstract_writes_the_stub(repo):
+    folder = _add_doi(repo, _paper_record(abstract=None))
+
+    assert "Replace this line" in (folder / "summary.md").read_text()
+
+
+def test_add_from_doi_without_a_year_aborts(repo):
+    with pytest.raises(ExtractError, match="year"):
+        _add_doi(repo, _paper_record(year=None))
+
+
+def test_sync_doi_refreshes_the_registry_fields(repo):
+    _add_doi(repo)
+    moved = _paper_record(title="Motion capture in rooms", venue="IEEE VCJR",
+                          year=2027, published="2027-01", keywords=("vr",))
+
+    result = _ingest_doi(repo, moved).sync("2026-autor-mocap")
+    data = yaml.safe_load((repo / "content" / "publications" / "2026-autor-mocap" / "entry.yaml").read_text())
+
+    assert result.changed is True
+    assert data["title"] == "Motion capture in rooms"
+    assert data["venue"] == "IEEE VCJR"
+    assert data["year"] == 2027
+    assert data["keywords"] == ["vr"]
+
+
+def test_sync_doi_warns_without_renaming_on_year_drift(repo):
+    _add_doi(repo)
+    result = _ingest_doi(repo, _paper_record(year=2027)).sync("2026-autor-mocap")
+
+    assert any("2027" in w for w in result.warnings)
+    assert (repo / "content" / "publications" / "2026-autor-mocap").is_dir()
+
+
+def test_sync_doi_keeps_the_summary_and_human_fields(repo):
+    folder = _add_doi(repo)
+    (folder / "summary.md").write_text("Hand-written.\n")
+    data = yaml.safe_load((folder / "entry.yaml").read_text())
+    data["topics"] = ["vr"]
+    (folder / "entry.yaml").write_text(yaml.safe_dump(data, sort_keys=False))
+
+    _ingest_doi(repo, _paper_record(title="Changed")).sync("2026-autor-mocap")
+    after = yaml.safe_load((folder / "entry.yaml").read_text())
+
+    assert (folder / "summary.md").read_text() == "Hand-written.\n"
+    assert after["topics"] == ["vr"]
+
+
+def test_sync_doi_reports_no_change_when_the_registry_is_still(repo):
+    _add_doi(repo)
+
+    assert _ingest_doi(repo, _paper_record()).sync("2026-autor-mocap").changed is False
+
+
+def test_sync_of_an_entry_with_neither_source_names_what_is_missing(repo):
+    folder = repo / "content" / "publications" / "2026-orphan"
+    folder.mkdir(parents=True)
+    (folder / "entry.yaml").write_text(yaml.safe_dump({
+        "type": "publication", "title": "t", "authors": ["a"], "year": 2026,
+        "topics": ["vr"], "language": "en",
+    }, sort_keys=False))
+    (folder / "summary.md").write_text("Text.\n")
+
+    with pytest.raises(FileNotFoundError, match="neither overleaf.project_id nor doi"):
+        _ingest(repo).sync("2026-orphan")
