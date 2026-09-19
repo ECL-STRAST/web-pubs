@@ -415,3 +415,48 @@ def test_authors_order_survives_the_round_trip():
 def test_the_old_single_author_field_is_rejected():
     with pytest.raises(UnknownField, match="unknown field: author"):
         entry.from_dict("2027-x", MINIMAL | {"author": "Silvia Nieves Serrano"})
+
+
+def test_doi_and_published_round_trip():
+    data = MINIMAL | {"doi": "10.1109/TVCG.2026.1234567", "published": "2026-03-14"}
+
+    parsed = entry.from_dict("2027-x", data)
+
+    assert parsed.doi == "10.1109/TVCG.2026.1234567"
+    assert parsed.published == "2026-03-14"
+    assert entry.to_dict(parsed) == data
+
+
+def test_absent_doi_and_published_are_none():
+    parsed = entry.from_dict("2027-x", MINIMAL)
+
+    assert parsed.doi is None
+    assert parsed.published is None
+
+
+@pytest.mark.parametrize("doi", [
+    "https://doi.org/10.1109/TVCG.2026",
+    "10.11/suffix",
+    "DOI:10.1109/TVCG.2026",
+    "10.1109/su ffix",
+    "  ",
+])
+def test_doi_rejects_anything_but_the_bare_form(doi):
+    with pytest.raises(BadValue, match="doi"):
+        entry.from_dict("2027-x", MINIMAL | {"doi": doi})
+
+
+@pytest.mark.parametrize("doi", ["10.1109/TVCG.2026.1234567", "10.12345/a"])
+def test_doi_accepts_the_bare_form(doi):
+    assert entry.from_dict("2027-x", MINIMAL | {"doi": doi}).doi == doi
+
+
+@pytest.mark.parametrize("published", ["2026", "2026-03", "2026-03-14"])
+def test_published_accepts_the_three_lengths(published):
+    assert entry.from_dict("2027-x", MINIMAL | {"published": published}).published == published
+
+
+@pytest.mark.parametrize("published", ["2026/03", "2026-13", "2026-03-14T00:00", "March 2026", "  "])
+def test_published_rejects_anything_else(published):
+    with pytest.raises(BadValue, match="published"):
+        entry.from_dict("2027-x", MINIMAL | {"published": published})

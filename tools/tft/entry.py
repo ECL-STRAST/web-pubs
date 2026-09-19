@@ -33,13 +33,19 @@ EMBED = {
 GITHUB_URL = re.compile(r"https://github\.com/[A-Za-z0-9-]+/?")
 LINKEDIN_URL = re.compile(r"https://(?:www\.)?linkedin\.com/in/[A-Za-z0-9_%-]+/?")
 
+# The bare registrant form only; the resolved URL is built at render time.
+DOI = re.compile(r"10\.\d{4,}/\S+")
+DOI_BASE = "https://doi.org/"
+
+PUBLISHED = re.compile(r"\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?)?$")
+
 DOC_NAME = {THESIS: "thesis.pdf", PUBLICATION: "paper.pdf"}
 
 MANDATORY = ("type", "title", "authors", "year", "topics", "language")
 OPTIONAL = (
     "degree", "programme", "venue", "supervisors", "overleaf", "repos",
     "slides", "keywords", "score", "honours", "photo", "image", "video",
-    "author_github", "author_linkedin",
+    "author_github", "author_linkedin", "doi", "published",
 )
 
 MAX_SCORE = 10
@@ -84,6 +90,8 @@ class Entry:
     degree: str | None = None
     programme: str | None = None
     venue: str | None = None
+    doi: str | None = None
+    published: str | None = None
     supervisors: tuple[str, ...] = ()
     overleaf: Overleaf | None = None
     repos: Repos = field(default_factory=Repos)
@@ -120,6 +128,8 @@ def from_dict(slug: str, data: dict) -> Entry:
     _check_keywords(data)
     _check_supervisors(data)
     _check_text(data, "programme")
+    _check_doi(data)
+    _check_published(data)
     _check_filename(data, "photo")
     _check_filename(data, "slides")
     _check_filename(data, "image")
@@ -138,6 +148,8 @@ def from_dict(slug: str, data: dict) -> Entry:
         degree=data.get("degree"),
         programme=data.get("programme"),
         venue=data.get("venue"),
+        doi=data.get("doi"),
+        published=data.get("published"),
         supervisors=tuple(data.get("supervisors", ())),
         overleaf=_overleaf(data.get("overleaf")),
         repos=_repos(data.get("repos")),
@@ -165,6 +177,8 @@ def to_dict(entry: Entry) -> dict:
     _put(out, "degree", entry.degree)
     _put(out, "programme", entry.programme)
     _put(out, "venue", entry.venue)
+    _put(out, "doi", entry.doi)
+    _put(out, "published", entry.published)
     _put(out, "supervisors", list(entry.supervisors))
 
     out["topics"] = list(entry.topics)
@@ -307,6 +321,20 @@ def _check_filename(data: dict, name: str) -> None:
 
     if "/" in value or "\\" in value or ".." in value:
         raise BadValue(f"{name} must not contain a path separator")
+
+
+def _check_doi(data: dict) -> None:
+    _check_text(data, "doi")
+
+    if data.get("doi") is not None and not DOI.fullmatch(data["doi"]):
+        raise BadValue(f"doi must look like 10.NNNN/suffix, got {data['doi']!r}")
+
+
+def _check_published(data: dict) -> None:
+    _check_text(data, "published")
+
+    if data.get("published") is not None and not PUBLISHED.fullmatch(data["published"]):
+        raise BadValue(f"published must be YYYY, YYYY-MM or YYYY-MM-DD, got {data['published']!r}")
 
 
 def _check_video(data: dict) -> None:
