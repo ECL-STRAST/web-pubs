@@ -18,6 +18,10 @@ CROSSREF = "https://api.crossref.org/works/"
 DATACITE = "https://api.datacite.org/dois/"
 USER_AGENT = "tft-catalog/0.1"
 
+# How long a registry may take to connect and to answer each read: a stalled
+# registry is a broken connection, not a slow one, and must not hang the tool.
+TIMEOUT_SECONDS = 10
+
 # Sanity floor and ceiling, not a date filter: a registry year outside
 # is its bug, not data to file.
 MIN_YEAR, MAX_YEAR = 1000, 2100
@@ -46,7 +50,7 @@ def get_json(url: str) -> dict | None:
     )
 
     try:
-        with urllib.request.urlopen(request) as response:
+        with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
             return json.loads(response.read().decode("utf-8"))
     except HTTPError as exc:
         if exc.code == 404:

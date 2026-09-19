@@ -1,6 +1,9 @@
+import socket
+from urllib.error import URLError
+
 import pytest
 
-from tft.doi import CROSSREF, DATACITE, fetch
+from tft.doi import CROSSREF, DATACITE, TIMEOUT_SECONDS, fetch, get_json
 from tft.errors import RegistryError
 
 CROSSREF_URL = CROSSREF + "10.1109/TVCG.2026.1234567"
@@ -122,3 +125,33 @@ def test_record_without_venue_keywords_or_abstract():
     assert rec.authors == ("Solo",)
     assert rec.venue is None and rec.keywords == () and rec.abstract is None
     assert rec.published == "2026"
+
+
+def _stalling_urlopen(monkeypatch, error):
+    """urlopen replaced by a stub that notes its kwargs, then stalls."""
+    seen = {}
+
+    def urlopen(request, *args, **kwargs):
+        seen.update(kwargs)
+        raise error
+
+    monkeypatch.setattr("urllib.request.urlopen", urlopen)
+
+    return seen
+
+
+def test_stalled_registry_becomes_a_registry_error(monkeypatch):
+    seen = _stalling_urlopen(monkeypatch, TimeoutError("read operation timed out"))
+
+    with pytest.raises(RegistryError, match="check your connection"):
+        get_json(CROSSREF_URL)
+
+    assert seen["timeout"] == TIMEOUT_SECONDS
+
+
+def test_connect_timeout_maps_to_the_same_remedy(monkeypatch):
+    stall = socket.timeout("timed out")
+    _stalling_urlopen(monkeypatch, URLError(stall))
+
+    with pytest.raises(RegistryError, match="check your connection"):
+        get_json(CROSSREF_URL)
