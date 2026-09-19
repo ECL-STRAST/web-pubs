@@ -182,6 +182,27 @@ def test_add_doi_with_type_thesis_is_refused(repo, capsys):
     assert "thesis" in capsys.readouterr().err
 
 
+def test_add_doi_with_type_publication_is_allowed(repo, monkeypatch):
+    def fake_add_from_doi(self, doi, name):
+        return repo
+
+    monkeypatch.setattr("tft.ingest.Ingest.add_from_doi", fake_add_from_doi)
+
+    assert cli.main(["add", "--doi", "10.1109/x", "--name", "x",
+                     "--type", "publication"]) == 0
+
+
+@pytest.mark.parametrize("flag,value", [
+    ("--title", "T"), ("--author", "A"), ("--year", "2025"), ("--degree", "bachelor"),
+])
+def test_add_doi_refuses_the_overleaf_overrides(repo, capsys, flag, value):
+    # The registry supplies them; silently dropping the flag would lie.
+    code = cli.main(["add", "--doi", "10.1109/x", "--name", "x", flag, value])
+
+    assert code == 1
+    assert flag in capsys.readouterr().err
+
+
 def test_add_refuses_overleaf_and_doi_together(repo):
     with pytest.raises(SystemExit):
         cli.main(["add", "--overleaf", "abc", "--doi", "10.1109/x", "--name", "x"])

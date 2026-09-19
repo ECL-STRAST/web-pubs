@@ -128,6 +128,7 @@ def from_dict(slug: str, data: dict) -> Entry:
     _check_keywords(data)
     _check_supervisors(data)
     _check_text(data, "programme")
+    _check_text(data, "venue")
     _check_doi(data)
     _check_published(data)
     _check_filename(data, "photo")

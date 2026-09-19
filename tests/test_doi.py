@@ -68,6 +68,41 @@ def test_datacite_reply_maps_every_field():
     assert rec.published == "2026-03-14"
     assert rec.keywords == ("biomechanics",)
     assert rec.abstract == "The abstract."
+    # DataCite names languages in its own vocabulary ("eng" for "en"), so
+    # its language is dropped rather than mixed into the entry's.
+    assert rec.language is None
+
+
+def test_datacite_container_mapping_is_not_a_venue():
+    # The live API answers container as a mapping, not a string: 10.5281/
+    # zenodo.3710157 says {'type': 'Series', 'identifier': '10.1590/...'}.
+    attrs = dict(DATACITE_REPLY["data"]["attributes"])
+    attrs["container"] = {"type": "Series", "identifier": "10.1590/1982-0224-20170162",
+                          "identifierType": "DOI"}
+    rec = fetch("10.1109/x", get=_get({DATACITE + "10.1109/x": {"data": {"attributes": attrs}}}))
+
+    assert rec.venue is None
+
+
+def test_datacite_container_title_is_the_venue():
+    attrs = dict(DATACITE_REPLY["data"]["attributes"])
+    attrs["container"] = {"containerTitle": "IEEE TVCG", "containerType": "series"}
+    rec = fetch("10.1109/x", get=_get({DATACITE + "10.1109/x": {"data": {"attributes": attrs}}}))
+
+    assert rec.venue == "IEEE TVCG"
+
+
+def test_entity_encoded_tags_do_not_survive_the_strip():
+    # A registry abstract may hide its markup behind entities: stripping
+    # before unescaping would hand the decoded tags straight to |safe.
+    msg = {"message": {
+        "title": ["Bare"], "issued": {"date-parts": [[2026]]},
+        "abstract": "<jats:p>&lt;script&gt;alert(1)&lt;/script&gt; plain.</jats:p>",
+    }}
+    rec = fetch("10.1109/x", get=_get({CROSSREF + "10.1109/x": msg}))
+
+    assert "<" not in rec.abstract
+    assert rec.abstract == "alert(1) plain."
 
 
 def test_crossref_404_falls_back_to_datacite():

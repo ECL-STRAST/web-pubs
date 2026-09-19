@@ -5,8 +5,9 @@ import yaml
 
 from tft import config
 from tft.catalog import Catalog
+from tft.doi import Record
 from tft.entry import PUBLICATION
-from tft.errors import CompileError, ExtractError
+from tft.errors import BadValue, CompileError, ExtractError
 from tft.ingest import Ingest, Overrides
 
 PROJECT = "698b41fa174f9aec00db94cb"
@@ -455,8 +456,6 @@ def test_sync_warns_but_does_not_rename_on_a_year_change(repo):
     assert any("2028" in w for w in result.warnings)
 
 
-from tft.doi import Record
-
 DOI_STR = "10.1109/TVCG.2026.1234567"
 
 
@@ -511,6 +510,13 @@ def test_add_from_doi_without_abstract_writes_the_stub(repo):
 def test_add_from_doi_without_a_year_aborts(repo):
     with pytest.raises(ExtractError, match="year"):
         _add_doi(repo, _paper_record(year=None))
+
+
+def test_add_from_doi_without_authors_leaves_no_entry(repo):
+    with pytest.raises(BadValue, match="authors"):
+        _add_doi(repo, _paper_record(authors=()))
+
+    assert not (repo / "content" / "publications" / "2026-autor-mocap").exists()
 
 
 def test_sync_doi_refreshes_the_registry_fields(repo):

@@ -48,6 +48,16 @@ def _add(args) -> int:
         if args.type not in (None, PUBLICATION):
             raise TftError("a DOI is not a thesis; --doi implies --type publication")
 
+        supplied = [
+            f"--{flag}" for flag, value in (
+                ("title", args.title), ("author", args.author),
+                ("year", args.year), ("degree", args.degree),
+            ) if value is not None
+        ]
+
+        if supplied:
+            raise TftError(f"the registry supplies {' '.join(supplied)}; edit entry.yaml afterwards")
+
         folder = _ingest().add_from_doi(doi=args.doi, name=args.name)
     else:
         overrides = Overrides(

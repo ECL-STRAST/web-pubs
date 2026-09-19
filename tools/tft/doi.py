@@ -5,6 +5,7 @@ The DOI shape comes from entry.py, which owns the schema.
 """
 
 import html
+import http.client
 import json
 import re
 import urllib.request
@@ -57,7 +58,8 @@ def get_json(url: str) -> dict | None:
             return None
 
         raise RegistryError(f"{url}: HTTP {exc.code}; try again later") from exc
-    except (URLError, TimeoutError) as exc:
+    # RemoteDisconnected and friends escape urlopen unwrapped.
+    except (URLError, TimeoutError, http.client.HTTPException) as exc:
         raise RegistryError(f"{url}: {exc}; check your connection") from exc
     except json.JSONDecodeError as exc:
         raise RegistryError(f"{url}: the registry replied with malformed JSON") from exc
@@ -122,12 +124,15 @@ def _strip_markup(text: str | None) -> str | None:
     if not text:
         return None
 
-    body = PARAGRAPH_END.sub("\n\n", text)
+    # Unescape first: an entity-encoded <script> decodes to a real tag,
+    # which the strip then removes; the reverse order would smuggle it in.
+    body = html.unescape(text)
+    body = PARAGRAPH_END.sub("\n\n", body)
     body = TAG.sub("", body)
     paragraphs = [" ".join(line.split()) for line in body.split("\n\n")]
     out = "\n\n".join(p for p in paragraphs if p)
 
-    return html.unescape(out) or None
+    return out or None
 
 
 def _from_crossref(message: dict) -> Record:
@@ -174,6 +179,20 @@ def _datacite_abstract(attributes: dict) -> str | None:
     return None
 
 
+def _datacite_venue(attributes: dict) -> str | None:
+    # The live API answers container as a mapping, not a string; only its
+    # title, if it has one, is a venue a human could read.
+    container = attributes.get("container")
+
+    if isinstance(container, str):
+        return container or None
+
+    if isinstance(container, dict):
+        return container.get("containerTitle") or container.get("title") or None
+
+    return None
+
+
 def _from_datacite(attributes: dict) -> Record:
     year = attributes.get("publicationYear")
     published = None
@@ -192,10 +211,11 @@ def _from_datacite(attributes: dict) -> Record:
         ),
         year=year,
         published=published,
-        venue=attributes.get("container") or None,
+        venue=_datacite_venue(attributes),
         keywords=tuple(
             s["subject"] for s in attributes.get("subjects", []) if s.get("subject")
         ),
         abstract=_strip_markup(_datacite_abstract(attributes)),
-        language=attributes.get("language"),
+        # DataCite reports "eng" where CrossRef reports "en": two vocabularies
+        # in one field is worse than the add_from_doi default.
     )

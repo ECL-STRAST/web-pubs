@@ -254,6 +254,18 @@ def test_programme_must_be_a_string():
         entry.from_dict("2027-x", MINIMAL | {"programme": 7})
 
 
+def test_venue_must_be_a_string():
+    # The DataCite API hands back container as a mapping; a registry driver
+    # must never commit one as a venue.
+    with pytest.raises(BadValue, match="venue"):
+        entry.from_dict("2027-x", MINIMAL | {"venue": {"type": "Series"}})
+
+
+def test_venue_must_be_a_non_empty_string():
+    with pytest.raises(BadValue, match="venue"):
+        entry.from_dict("2027-x", MINIMAL | {"venue": "  "})
+
+
 def test_image_and_video_round_trip():
     data = MINIMAL | {"image": "cover.png", "video": YOUTUBE_URL}
 
