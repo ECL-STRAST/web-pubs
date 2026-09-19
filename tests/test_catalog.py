@@ -8,7 +8,7 @@ from tft.errors import MissingField
 MINIMAL = {
     "type": "thesis",
     "title": "A database for biomechanical data",
-    "author": "Silvia Nieves Serrano",
+    "authors": ["Silvia Nieves Serrano"],
     "year": 2027,
     "degree": "bachelor",
     "topics": ["biomechanics"],
@@ -69,7 +69,7 @@ def test_create_scaffolds_a_usable_folder(repo):
 
     folder = cat.create(
         slug="2027-x", type="thesis", year=2027,
-        title="Untitled", author="Unknown", degree="bachelor",
+        title="Untitled", authors=["Unknown"], degree="bachelor",
     )
 
     assert folder == repo / "content" / "theses" / "2027-x"
@@ -83,7 +83,7 @@ def test_create_refuses_an_existing_slug(repo):
     with pytest.raises(FileExistsError):
         _catalog(repo).create(
             slug="2027-x", type="thesis", year=2027,
-            title="t", author="a", degree="bachelor",
+            title="t", authors=["a"], degree="bachelor",
         )
 
 

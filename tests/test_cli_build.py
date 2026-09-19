@@ -6,7 +6,7 @@ from tft import cli
 MINIMAL = {
     "type": "thesis",
     "title": "A database for biomechanical data",
-    "author": "Silvia Nieves Serrano",
+    "authors": ["Silvia Nieves Serrano"],
     "year": 2027,
     "degree": "bachelor",
     "topics": ["biomechanics"],

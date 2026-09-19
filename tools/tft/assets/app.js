@@ -24,7 +24,7 @@ function matches(e, f) {
   if (f.slides && !e.has_slides) return false;
   if (!f.q) return true;
 
-  const haystack = [e.title, e.author, e.summary, e.programme,
+  const haystack = [e.title, e.authors.join(" "), e.summary, e.programme,
                     e.topics.join(" "), e.keywords.join(" ")]
     .join(" ").toLowerCase();
   return haystack.includes(f.q);
@@ -44,7 +44,7 @@ function card(e) {
 
   return `<li>
     <a href="${escape(e.url)}">${escape(e.title)}</a>
-    <p class="meta">${escape(e.author)} &middot; ${escape(e.year)}${degree}</p>
+    <p class="meta">${escape(e.authors.join(", "))} &middot; ${escape(e.year)}${degree}</p>
     ${badge(e)}
     <p>${escape(e.summary)}</p>
     <p class="topics">${topics}</p>

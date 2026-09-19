@@ -35,7 +35,7 @@ LINKEDIN_URL = re.compile(r"https://(?:www\.)?linkedin\.com/in/[A-Za-z0-9_%-]+/?
 
 DOC_NAME = {THESIS: "thesis.pdf", PUBLICATION: "paper.pdf"}
 
-MANDATORY = ("type", "title", "author", "year", "topics", "language")
+MANDATORY = ("type", "title", "authors", "year", "topics", "language")
 OPTIONAL = (
     "degree", "programme", "venue", "supervisors", "overleaf", "repos",
     "slides", "keywords", "score", "honours", "photo", "image", "video",
@@ -44,7 +44,7 @@ OPTIONAL = (
 
 MAX_SCORE = 10
 
-TEXT_FIELDS = ("title", "author", "language")
+TEXT_FIELDS = ("title", "language")
 
 
 @dataclass(frozen=True)
@@ -77,7 +77,7 @@ class Entry:
     slug: str
     type: str
     title: str
-    author: str
+    authors: tuple[str, ...]
     year: int
     topics: tuple[str, ...]
     language: str
@@ -115,6 +115,7 @@ def from_dict(slug: str, data: dict) -> Entry:
         _one_of(data, "degree", DEGREES)
 
     _check_types(data)
+    _check_authors(data)
     _check_score(data)
     _check_keywords(data)
     _check_supervisors(data)
@@ -130,7 +131,7 @@ def from_dict(slug: str, data: dict) -> Entry:
         slug=slug,
         type=kind,
         title=data["title"],
-        author=data["author"],
+        authors=tuple(data["authors"]),
         year=data["year"],
         topics=tuple(data["topics"]),
         language=data["language"],
@@ -157,7 +158,7 @@ def to_dict(entry: Entry) -> dict:
     out: dict[str, Any] = {
         "type": entry.type,
         "title": entry.title,
-        "author": entry.author,
+        "authors": list(entry.authors),
         "year": entry.year,
     }
 
@@ -259,6 +260,15 @@ def _check_keywords(data: dict) -> None:
     for word in keywords:
         if not isinstance(word, str) or not word.strip():
             raise BadValue("keywords must be non-empty strings")
+
+
+def _check_authors(data: dict) -> None:
+    if not isinstance(data["authors"], list) or not data["authors"]:
+        raise BadValue("authors must be a non-empty list")
+
+    for name in data["authors"]:
+        if not isinstance(name, str) or not name.strip():
+            raise BadValue("authors must be non-empty strings")
 
 
 def _check_supervisors(data: dict) -> None:

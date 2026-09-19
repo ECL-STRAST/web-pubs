@@ -85,7 +85,7 @@ def test_add_fills_entry_yaml_from_the_source(repo):
     data = yaml.safe_load((folder / "entry.yaml").read_text())
 
     assert data["title"] == "A database for biomechanical data"
-    assert data["author"] == "Silvia Nieves Serrano"
+    assert data["authors"] == ["Silvia Nieves Serrano"]
     assert data["year"] == 2027
     assert data["degree"] == "bachelor"
     assert data["keywords"] == ["biomechanics", "databases"]
@@ -170,7 +170,7 @@ def test_add_without_main_tex_succeeds_with_full_overrides(repo):
     data = yaml.safe_load((folder / "entry.yaml").read_text())
 
     assert data["title"] == "T"
-    assert data["author"] == "A"
+    assert data["authors"] == ["A"]
     assert data["year"] == 2027
     assert data["degree"] == "bachelor"
     assert data["keywords"] == ["biomechanics", "databases"]

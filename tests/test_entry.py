@@ -6,7 +6,7 @@ from tft.errors import BadValue, MissingField, UnknownField
 MINIMAL = {
     "type": "thesis",
     "title": "A database for biomechanical data",
-    "author": "Silvia Nieves Serrano",
+    "authors": ["Silvia Nieves Serrano"],
     "year": 2027,
     "degree": "bachelor",
     "topics": ["biomechanics"],
@@ -48,7 +48,7 @@ def test_unfinished_entry_is_valid():
     assert parsed.overleaf is None
 
 
-@pytest.mark.parametrize("field", ["type", "title", "author", "year", "topics", "language"])
+@pytest.mark.parametrize("field", ["type", "title", "authors", "year", "topics", "language"])
 def test_missing_mandatory_field(field):
     data = {k: v for k, v in MINIMAL.items() if k != field}
 
@@ -386,3 +386,32 @@ def test_author_linkedin_rejects_anything_else(url):
 def test_author_github_must_be_a_string():
     with pytest.raises(BadValue, match="author_github"):
         entry.from_dict("2027-x", MINIMAL | {"author_github": 42})
+
+
+def test_authors_must_be_a_non_empty_list():
+    data = {k: v for k, v in MINIMAL.items() if k != "authors"} | {"authors": []}
+
+    with pytest.raises(BadValue, match="authors"):
+        entry.from_dict("2027-x", data)
+
+
+def test_authors_must_be_non_empty_strings():
+    data = {k: v for k, v in MINIMAL.items() if k != "authors"} | {"authors": ["ok", " "]}
+
+    with pytest.raises(BadValue, match="authors"):
+        entry.from_dict("2027-x", data)
+
+
+def test_authors_order_survives_the_round_trip():
+    data = {k: v for k, v in MINIMAL.items() if k != "authors"} | {
+        "authors": ["X. Garcia", "Y. Sanchez", "B. Gomez"]
+    }
+    parsed = entry.from_dict("2027-x", data)
+
+    assert parsed.authors == ("X. Garcia", "Y. Sanchez", "B. Gomez")
+    assert entry.to_dict(parsed) == data
+
+
+def test_the_old_single_author_field_is_rejected():
+    with pytest.raises(UnknownField, match="unknown field: author"):
+        entry.from_dict("2027-x", MINIMAL | {"author": "Silvia Nieves Serrano"})

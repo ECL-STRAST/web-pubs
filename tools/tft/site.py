@@ -46,7 +46,7 @@ def record(entry: Entry) -> dict:
         "slug": entry.slug,
         "type": entry.type,
         "title": entry.title,
-        "author": entry.author,
+        "authors": list(entry.authors),
         "year": entry.year,
         "degree": entry.degree,
         "programme": entry.programme,

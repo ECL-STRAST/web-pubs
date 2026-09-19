@@ -11,7 +11,7 @@ from tft.site import Site, titlecase
 MINIMAL = {
     "type": "thesis",
     "title": "A database for biomechanical data",
-    "author": "Silvia Nieves Serrano",
+    "authors": ["Silvia Nieves Serrano"],
     "year": 2027,
     "degree": "bachelor",
     "topics": ["biomechanics"],
@@ -74,7 +74,7 @@ def test_index_json_matches_the_golden_record(repo):
         "slug": "2027-nieves-serrano-biomechanics-db",
         "type": "thesis",
         "title": "A database for biomechanical data",
-        "author": "Silvia Nieves Serrano",
+        "authors": ["Silvia Nieves Serrano"],
         "year": 2027,
         "degree": "bachelor",
         "programme": "GRADO EN INGENIERÍA BIOMÉDICA",
@@ -174,7 +174,7 @@ def test_build_into_a_fresh_path_works(repo):
 def test_accents_survive_round_trip(repo):
     """entry.yaml and index.json must stay UTF-8, regardless of locale."""
     name = "Rodrigo García Carmona"
-    _entry(repo, "2027-x", FULL | {"author": name})
+    _entry(repo, "2027-x", FULL | {"authors": [name]})
     cfg = config.load(repo)
     cat = Catalog(cfg)
     cat.save(cat.find("2027-x"))  # round-trip through store.write

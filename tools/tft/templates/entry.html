@@ -17,12 +17,12 @@
 
 <article>
   {% if entry.photo %}
-  <img class="portrait" src="{{ entry.photo }}" alt="{{ entry.author }}">
+  <img class="portrait" src="{{ entry.photo }}" alt="{{ entry.authors|join(', ') }}">
   {% endif %}
 
   <h1>{{ entry.title }}</h1>
   <p class="meta">
-    {{ entry.author }}
+    {{ entry.authors|join(", ") }}
     {%- if entry.author_github %}
     <a class="social" href="{{ entry.author_github }}" aria-label="GitHub">{% include "icons/github.svg" %}</a>
     {%- endif %}

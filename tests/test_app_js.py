@@ -13,7 +13,7 @@ APP_JS = Path(__file__).parent.parent / "tools" / "tft" / "assets" / "app.js"
 MINIMAL = {
     "type": "thesis",
     "title": "A database for biomechanical data",
-    "author": "Silvia Nieves Serrano",
+    "authors": ["Silvia Nieves Serrano"],
     "year": 2027,
     "degree": "bachelor",
     "topics": ["biomechanics"],

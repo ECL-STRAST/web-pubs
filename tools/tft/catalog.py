@@ -39,7 +39,7 @@ class Catalog:
     def dir_for(self, entry: Entry) -> Path:
         return self._content(COLLECTIONS[entry.type]) / entry.slug
 
-    def create(self, slug, type, year, title, author, degree=None,
+    def create(self, slug, type, year, title, authors, degree=None,
                programme=None, supervisors=(), keywords=(), summary=STUB_SUMMARY) -> Path:
         """Scaffold a new entry folder with stubs for the human to fill in."""
         folder = self._content(COLLECTIONS[type]) / slug
@@ -48,7 +48,7 @@ class Catalog:
             raise FileExistsError(f"{folder} already exists")
 
         data = {
-            "type": type, "title": title, "author": author, "year": year,
+            "type": type, "title": title, "authors": list(authors), "year": year,
             "topics": ["CHANGE-ME"], "language": "en",
         }
 

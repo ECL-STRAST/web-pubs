@@ -1,6 +1,7 @@
 type: thesis
 title: Design and development of a motion capture library for virtual reality devices
-author: Miguel Angel Durán Luque
+authors:
+- Miguel Angel Durán Luque
 author_github: https://github.com/Migueldulu/
 author_linkedin: https://www.linkedin.com/in/miguel-angel-duran-luque-b782a3181/
 year: 2026
