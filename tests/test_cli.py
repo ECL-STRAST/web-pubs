@@ -157,3 +157,48 @@ def test_add_reports_an_unreadable_field(repo, monkeypatch, capsys):
 
     assert code == 1
     assert "--title" in capsys.readouterr().err
+
+
+def test_add_doi_implies_publication(repo, monkeypatch):
+    seen = {}
+
+    def fake_add_from_doi(self, doi, name):
+        seen["doi"] = doi
+        seen["name"] = name
+        return repo
+
+    monkeypatch.setattr("tft.ingest.Ingest.add_from_doi", fake_add_from_doi)
+
+    code = cli.main(["add", "--doi", "10.1109/x", "--name", "autor-paper"])
+
+    assert code == 0
+    assert seen == {"doi": "10.1109/x", "name": "autor-paper"}
+
+
+def test_add_doi_with_type_thesis_is_refused(repo, capsys):
+    code = cli.main(["add", "--doi", "10.1109/x", "--name", "x", "--type", "thesis"])
+
+    assert code == 1
+    assert "thesis" in capsys.readouterr().err
+
+
+def test_add_refuses_overleaf_and_doi_together(repo):
+    with pytest.raises(SystemExit):
+        cli.main(["add", "--overleaf", "abc", "--doi", "10.1109/x", "--name", "x"])
+
+
+def test_add_requires_one_source(repo):
+    with pytest.raises(SystemExit):
+        cli.main(["add", "--name", "x"])
+
+
+def test_add_doi_reports_registry_error(repo, monkeypatch, capsys):
+    from tft.errors import RegistryError
+
+    def fake(self, doi, name):
+        raise RegistryError("no registry knows 10.1109/x; check the spelling")
+
+    monkeypatch.setattr("tft.ingest.Ingest.add_from_doi", fake)
+
+    assert cli.main(["add", "--doi", "10.1109/x", "--name", "x"]) == 1
+    assert "check the spelling" in capsys.readouterr().err

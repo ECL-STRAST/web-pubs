@@ -6,7 +6,7 @@ from pathlib import Path
 
 from . import config
 from .catalog import Catalog
-from .entry import DEGREES, THESIS, TYPES
+from .entry import DEGREES, PUBLICATION, THESIS, TYPES
 from .errors import TftError
 from .ingest import Ingest, Overrides
 from .site import SITE, Site
@@ -44,13 +44,20 @@ def _ingest() -> Ingest:
 
 
 def _add(args) -> int:
-    overrides = Overrides(
-        title=args.title, author=args.author, year=args.year, degree=args.degree,
-    )
-    folder = _ingest().add(
-        project_id=args.overleaf, name=args.name,
-        overrides=overrides, type=args.type,
-    )
+    if args.doi:
+        if args.type not in (None, PUBLICATION):
+            raise TftError("a DOI is not a thesis; --doi implies --type publication")
+
+        folder = _ingest().add_from_doi(doi=args.doi, name=args.name)
+    else:
+        overrides = Overrides(
+            title=args.title, author=args.author, year=args.year, degree=args.degree,
+        )
+        folder = _ingest().add(
+            project_id=args.overleaf, name=args.name,
+            overrides=overrides, type=args.type or THESIS,
+        )
+
     print(f"created {folder}; now replace the CHANGE-ME topic")
 
     return 0
@@ -97,14 +104,16 @@ def _parser() -> argparse.ArgumentParser:
     subs = parser.add_subparsers(dest="command", required=True)
 
     add = subs.add_parser("add", help="add an entry from an Overleaf project")
-    add.add_argument("--overleaf", required=True, metavar="ID", help="Overleaf project id")
+    src = add.add_mutually_exclusive_group(required=True)
+    src.add_argument("--overleaf", metavar="ID", help="Overleaf project id")
+    src.add_argument("--doi", metavar="DOI", help="create a publication from its DOI")
     add.add_argument("--name", required=True, help="slug without the year, e.g. surname-topic")
     add.add_argument("--title", default=None, help="override the extracted title")
     add.add_argument("--author", default=None, help="override the extracted author")
     add.add_argument("--year", default=None, type=int, help="override the extracted year")
     add.add_argument("--degree", default=None, choices=DEGREES,
                      help="override the extracted degree")
-    add.add_argument("--type", default=THESIS, choices=TYPES)
+    add.add_argument("--type", default=None, choices=TYPES)
     add.set_defaults(run=_add)
 
     sync = subs.add_parser("sync", help="re-pull and recompile an entry")
