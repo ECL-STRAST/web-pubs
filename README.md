@@ -12,6 +12,7 @@ what makes an entry public; there is no flag to get wrong.
 ## Layout
 
     content/theses/<year>-<slug>/   entry.yaml, summary.md, thesis.pdf, slides.pdf
+    content/publications/<year>-<slug>/ same shape; paper.pdf only if shareable
     taxonomy/topics.yaml            the controlled topic vocabulary
     tools/tft/                      the tooling
     site/                           build output, gitignored
@@ -119,6 +120,25 @@ sync** — do not hand-edit it; edit the thesis. Your own fields (`topics`,
 thesis's year changes, `sync` updates the field and warns, but does not
 rename the folder: the slug is an identifier and shared URLs must keep
 working.
+
+### Adding a paper
+
+    tft add --doi 10.1109/TVCG.2026.1234567 --name autor-mocap
+
+Title, authors in order, year, venue, keywords and the abstract (when
+the registry carries one) come from CrossRef, falling back to DataCite.
+The slug still needs `--name`: it is a URL others will cite. A DOI the
+registries do not know aborts; so does one without a year.
+
+Then replace the `CHANGE-ME` topic as with a thesis. `tft sync <slug>`
+re-reads the registries and refreshes title, authors, year, venue and
+keywords; your own fields and `summary.md` are never touched.
+
+Drop `paper.pdf` in the folder only if the rights allow it — publisher
+PDFs usually may not be hosted, accepted manuscripts often may. A
+paywalled paper is listed by its citation alone: the page links the
+DOI. Presence in this repo remains the clearance for the file; the
+citation itself is public knowledge and is not withheld.
 
 ### Changing one field
 
