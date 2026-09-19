@@ -1,0 +1,124 @@
+import pytest
+
+from tft.doi import CROSSREF, DATACITE, fetch
+from tft.errors import RegistryError
+
+CROSSREF_URL = CROSSREF + "10.1109/TVCG.2026.1234567"
+DATACITE_URL = DATACITE + "10.1109/TVCG.2026.1234567"
+
+CROSSREF_REPLY = {"message": {
+    "title": ["Motion capture in the wild"],
+    "author": [
+        {"given": "Ana", "family": "Pérez", "sequence": "first",
+         "orcid": "0000-0002-1825-0097"},
+        {"given": "Bea", "family": "Gómez"},
+    ],
+    "issued": {"date-parts": [[2026, 3, 14]]},
+    "container-title": ["IEEE TVCG"],
+    "subject": ["motion capture", "vr"],
+    "abstract": ("<jats:abstract><jats:p>Two para.</jats:p>"
+                 "<jats:p>Second &amp; final.</jats:p></jats:abstract>"),
+    "language": "en",
+}}
+
+DATACITE_REPLY = {"data": {"attributes": {
+    "titles": [{"title": "A preprint"}],
+    "creators": [{"name": "Pérez, Ana"}, {"name": "Consortium"}],
+    "publicationYear": 2026,
+    "published": "2026-03-14T00:00:00Z",
+    "subjects": [{"subject": "biomechanics"}, {"subject": ""}],
+    "descriptions": [
+        {"descriptionType": "Other", "description": "ignore me"},
+        {"descriptionType": "Abstract", "description": "The abstract."},
+    ],
+    "language": "en",
+}}}
+
+
+def _get(replies):
+    """A fake network: url -> payload, missing key answers 404 (None)."""
+    def get(url):
+        return replies.get(url)
+
+    return get
+
+
+def test_crossref_reply_maps_every_field():
+    rec = fetch("10.1109/TVCG.2026.1234567", get=_get({CROSSREF_URL: CROSSREF_REPLY}))
+
+    assert rec.title == "Motion capture in the wild"
+    assert rec.authors == ("Ana Pérez", "Bea Gómez")
+    assert rec.year == 2026
+    assert rec.published == "2026-03-14"
+    assert rec.venue == "IEEE TVCG"
+    assert rec.keywords == ("motion capture", "vr")
+    assert rec.abstract == "Two para.\n\nSecond & final."
+    assert rec.language == "en"
+
+
+def test_datacite_reply_maps_every_field():
+    rec = fetch("10.1109/TVCG.2026.1234567", get=_get({DATACITE_URL: DATACITE_REPLY}))
+
+    assert rec.title == "A preprint"
+    assert rec.authors == ("Ana Pérez", "Consortium")
+    assert rec.year == 2026
+    assert rec.published == "2026-03-14"
+    assert rec.keywords == ("biomechanics",)
+    assert rec.abstract == "The abstract."
+
+
+def test_crossref_404_falls_back_to_datacite():
+    rec = fetch("10.1109/TVCG.2026.1234567", get=_get({DATACITE_URL: DATACITE_REPLY}))
+
+    assert rec.title == "A preprint"
+
+
+def test_unknown_doi_names_the_remedy():
+    with pytest.raises(RegistryError, match="check the spelling"):
+        fetch("10.1109/TVCG.2026.1234567", get=_get({}))
+
+
+@pytest.mark.parametrize("doi", ["not a doi", "https://doi.org/10.1109/x", ""])
+def test_malformed_doi_never_reaches_the_network(doi):
+    def get(url):
+        raise AssertionError("network must not be reached")
+
+    with pytest.raises(RegistryError, match="is not a DOI"):
+        fetch(doi, get=get)
+
+
+def test_issued_beats_print_beats_online_beats_accepted():
+    msg = {"message": {
+        "issued": {},
+        "published-print": {"date-parts": [[2025]]},
+        "published-online": {"date-parts": [[2026, 3]]},
+        "accepted": {"date-parts": [[2024]]},
+    }}
+    rec = fetch("10.1109/x", get=_get({CROSSREF + "10.1109/x": msg}))
+
+    assert (rec.year, rec.published) == (2025, "2025")
+
+
+def test_absurd_year_is_skipped():
+    msg = {"message": {"issued": {"date-parts": [[9999, 2, 3]]}}}
+    rec = fetch("10.1109/x", get=_get({CROSSREF + "10.1109/x": msg}))
+
+    assert rec.year is None and rec.published is None
+
+
+def test_old_but_real_year_survives_the_sanity_floor():
+    # Retro-registered classics carry DOIs: 10.1002/andp.19050910702 is 1905.
+    msg = {"message": {"issued": {"date-parts": [[1905, 6, 30]]}}}
+    rec = fetch("10.1109/x", get=_get({CROSSREF + "10.1109/x": msg}))
+
+    assert (rec.year, rec.published) == (1905, "1905-06-30")
+
+
+def test_record_without_venue_keywords_or_abstract():
+    msg = {"message": {"title": ["Bare"], "author": [{"family": "Solo"}],
+                       "issued": {"date-parts": [[2026]]}}}
+    rec = fetch("10.1109/x", get=_get({CROSSREF + "10.1109/x": msg}))
+
+    assert rec.authors == ("Solo",)
+    assert rec.venue is None and rec.keywords == () and rec.abstract is None
+    assert rec.published == "2026"

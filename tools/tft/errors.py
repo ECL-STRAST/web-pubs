@@ -43,3 +43,7 @@ class ExtractError(TftError):
 
 class UnsafeOutputDir(TftError):
     """--out names a directory that is not a previous build."""
+
+
+class RegistryError(TftError):
+    """A DOI lookup failed: malformed DOI, unknown to both registries, or the network."""
