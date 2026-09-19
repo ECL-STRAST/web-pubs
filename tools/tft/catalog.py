@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 from . import store
 from .config import Config
-from .entry import DOC_NAME, Entry, from_dict
+from .entry import DOC_NAME, THESIS, Entry, from_dict
 from .errors import ConfigError, MissingField, SchemaError
 
 CONTENT = "content"
@@ -111,7 +111,12 @@ class Catalog:
         return found
 
     def _required_files(self, entry: Entry) -> list[str]:
-        names = [store.SUMMARY_FILE, DOC_NAME[entry.type]]
+        names = [store.SUMMARY_FILE]
+
+        # Only the thesis needs its document: a paper's citation is the
+        # entry, its PDF may not be shareable.
+        if entry.type == THESIS:
+            names.append(DOC_NAME[entry.type])
 
         # Slides are optional, but a declared file must be there.
         if entry.slides:

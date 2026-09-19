@@ -194,3 +194,39 @@ def test_present_image_is_no_problem(repo):
     (folder / "cover.png").write_bytes(b"\x89PNG\r\n")
 
     assert _catalog(repo).problems() == []
+
+
+PAPER = {
+    "type": "publication",
+    "title": "Motion capture in the wild",
+    "authors": ["A. Autor", "B. Autor"],
+    "year": 2026,
+    "topics": ["vr"],
+    "language": "en",
+    "venue": "IEEE TVCG",
+    "doi": "10.1109/TVCG.2026.1234567",
+}
+
+
+def _publication(repo, slug, data=None, summary="Text.\n", pdf=False):
+    folder = repo / "content" / "publications" / slug
+    folder.mkdir(parents=True)
+    (folder / "entry.yaml").write_text(yaml.safe_dump(data or PAPER, sort_keys=False))
+    (folder / "summary.md").write_text(summary)
+
+    if pdf:
+        (folder / "paper.pdf").write_bytes(b"%PDF-1.4\n")
+
+    return folder
+
+
+def test_publication_without_a_pdf_is_no_problem(repo):
+    _publication(repo, "2026-x")
+
+    assert _catalog(repo).problems() == []
+
+
+def test_publication_with_a_pdf_on_disk_is_no_problem(repo):
+    _publication(repo, "2026-x", pdf=True)
+
+    assert _catalog(repo).problems() == []

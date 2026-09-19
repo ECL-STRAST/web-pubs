@@ -11,7 +11,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from . import store
 from .catalog import Catalog
 from .config import Config
-from .entry import DOC_NAME, Entry, parse_video
+from .entry import DOI_BASE, DOC_NAME, THESIS, Entry, parse_video
 from .errors import BadValue, UnsafeOutputDir
 
 SITE = "site"
@@ -38,7 +38,7 @@ def titlecase(text: str) -> str:
     return " ".join([words[0].capitalize(), *rest])
 
 
-def record(entry: Entry) -> dict:
+def record(entry: Entry, has_doc: bool) -> dict:
     """The flat shape the client-side filter works with."""
     base = f"{ENTRIES}/{entry.slug}"
 
@@ -50,6 +50,9 @@ def record(entry: Entry) -> dict:
         "year": entry.year,
         "degree": entry.degree,
         "programme": entry.programme,
+        "venue": entry.venue,
+        "doi": f"{DOI_BASE}{entry.doi}" if entry.doi else None,
+        "published": entry.published,
         "language": entry.language,
         "topics": list(entry.topics),
         "supervisors": list(entry.supervisors),
@@ -57,7 +60,7 @@ def record(entry: Entry) -> dict:
         "score": entry.score,
         "honours": entry.honours,
         "url": f"{base}/",
-        "doc": f"{base}/{DOC_NAME[entry.type]}",
+        "doc": f"{base}/{DOC_NAME[entry.type]}" if has_doc else None,
         "slides": f"{base}/{entry.slides}" if entry.slides else None,
         "has_code": bool(entry.repos.code),
         "has_slides": bool(entry.slides),
@@ -101,7 +104,11 @@ class Site:
         """Confirm every file a build would copy exists, before out is wiped."""
         for entry in entries:
             source = self._catalog.dir_for(entry)
-            self._require(source, DOC_NAME[entry.type], entry.slug)
+            doc = DOC_NAME[entry.type]
+
+            # A thesis must carry its document; a paper may omit the PDF.
+            if entry.type == THESIS or store.exists(source / doc):
+                self._require(source, doc, entry.slug)
 
             if entry.slides:
                 self._require(source, entry.slides, entry.slug)
@@ -117,7 +124,10 @@ class Site:
             raise BadValue(f"{slug}: missing {name}")
 
     def _write_index(self, out: Path, entries: list[Entry]) -> None:
-        records = [record(entry) for entry in entries]
+        records = [
+            record(e, store.exists(self._catalog.dir_for(e) / DOC_NAME[e.type]))
+            for e in entries
+        ]
         (out / INDEX_JSON).write_text(
             json.dumps(records, indent=1, ensure_ascii=False), encoding="utf-8",
         )
@@ -136,7 +146,10 @@ class Site:
 
         source = self._catalog.dir_for(entry)
         doc = DOC_NAME[entry.type]
-        shutil.copyfile(source / doc, folder / doc)
+        has_doc = store.exists(source / doc)
+
+        if has_doc:
+            shutil.copyfile(source / doc, folder / doc)
 
         if entry.slides:
             shutil.copyfile(source / entry.slides, folder / entry.slides)
@@ -148,7 +161,7 @@ class Site:
             shutil.copyfile(source / entry.image, folder / entry.image)
 
         page = self._jinja.get_template("entry.html").render(
-            entry=entry, doc=doc, video=parse_video(entry.video),
+            entry=entry, doc=doc if has_doc else None, video=parse_video(entry.video),
             summary=markdown.markdown(entry.summary),
         )
         (folder / "index.html").write_text(page, encoding="utf-8")

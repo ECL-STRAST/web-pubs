@@ -78,6 +78,9 @@ def test_index_json_matches_the_golden_record(repo):
         "year": 2027,
         "degree": "bachelor",
         "programme": "GRADO EN INGENIERÍA BIOMÉDICA",
+        "venue": None,
+        "doi": None,
+        "published": None,
         "language": "en",
         "topics": ["biomechanics", "rehabilitation"],
         "supervisors": ["Rodrigo Garcia Carmona"],
@@ -423,3 +426,44 @@ def test_entry_page_omits_the_media_blocks_when_absent(repo):
 
     assert "thesis-image" not in page
     assert "<iframe" not in page
+
+
+PAPER = {
+    "type": "publication",
+    "title": "Motion capture in the wild",
+    "authors": ["A. Autor", "B. Autor"],
+    "year": 2026,
+    "topics": ["biomechanics"],
+    "language": "en",
+    "venue": "IEEE TVCG",
+    "doi": "10.1109/TVCG.2026.1234567",
+}
+
+
+def _publication(repo, slug="2026-x", pdf=False):
+    folder = repo / "content" / "publications" / slug
+    folder.mkdir(parents=True)
+    (folder / "entry.yaml").write_text(yaml.safe_dump(PAPER, sort_keys=False))
+    (folder / "summary.md").write_text("Text.\n")
+
+    if pdf:
+        (folder / "paper.pdf").write_bytes(b"%PDF-1.4\n")
+
+    return folder
+
+
+def test_publication_without_a_pdf_builds_and_has_no_doc(repo):
+    _publication(repo)
+
+    record = json.loads((_build(repo) / "index.json").read_text())[0]
+
+    assert record["doc"] is None
+
+
+def test_publication_with_a_pdf_copies_it(repo):
+    _publication(repo, pdf=True)
+
+    out = _build(repo)
+
+    assert (out / "entries" / "2026-x" / "paper.pdf").read_bytes().startswith(b"%PDF")
+    assert json.loads((out / "index.json").read_text())[0]["doc"] == "entries/2026-x/paper.pdf"
