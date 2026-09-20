@@ -3,8 +3,8 @@ import subprocess
 
 import pytest
 
-from tft import overleaf
-from tft.errors import OverleafError
+from pubs import overleaf
+from pubs.errors import OverleafError
 
 TOKEN = "olp_secret123"
 

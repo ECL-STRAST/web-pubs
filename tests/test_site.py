@@ -3,10 +3,10 @@ import json
 import pytest
 import yaml
 
-from tft import config
-from tft.catalog import Catalog
-from tft.errors import BadValue, UnsafeOutputDir
-from tft.site import Site, titlecase
+from pubs import config
+from pubs.catalog import Catalog
+from pubs.errors import BadValue, UnsafeOutputDir
+from pubs.site import Site, titlecase
 
 MINIMAL = {
     "type": "thesis",

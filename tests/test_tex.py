@@ -1,7 +1,7 @@
 import pytest
 
-from tft import tex
-from tft.errors import ExtractError
+from pubs import tex
+from pubs.errors import ExtractError
 
 MAIN = r"""
 \newcommand{\authorname}{Belén Gómez Martínez}

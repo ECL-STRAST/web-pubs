@@ -1,7 +1,7 @@
 import pytest
 import yaml
 
-from tft import cli
+from pubs import cli
 
 MINIMAL = {
     "type": "thesis",
@@ -16,7 +16,7 @@ MINIMAL = {
 
 @pytest.fixture
 def repo(tmp_path, monkeypatch):
-    (tmp_path / "pyproject.toml").write_text("[project]\nname = 'tft'\n")
+    (tmp_path / "pyproject.toml").write_text("[project]\nname = 'pubs'\n")
     (tmp_path / "taxonomy").mkdir()
     (tmp_path / "taxonomy" / "topics.yaml").write_text(yaml.safe_dump(["biomechanics"]))
     monkeypatch.chdir(tmp_path)
@@ -75,7 +75,7 @@ def test_add_builds_the_slug_from_the_name(repo, monkeypatch):
         seen["name"] = name
         return repo
 
-    monkeypatch.setattr("tft.ingest.Ingest.add", fake_add)
+    monkeypatch.setattr("pubs.ingest.Ingest.add", fake_add)
 
     code = cli.main([
         "add", "thesis", "--overleaf", "abc", "--name", "nieves-serrano-biomechanics-db",
@@ -86,11 +86,11 @@ def test_add_builds_the_slug_from_the_name(repo, monkeypatch):
 
 
 def test_sync_reports_no_change(repo, monkeypatch, capsys):
-    from tft.ingest import SyncResult
+    from pubs.ingest import SyncResult
 
     _entry(repo, "2027-x")
     monkeypatch.setattr(
-        "tft.ingest.Ingest.sync", lambda self, slug: SyncResult(changed=False),
+        "pubs.ingest.Ingest.sync", lambda self, slug: SyncResult(changed=False),
     )
 
     assert cli.main(["sync", "2027-x"]) == 0
@@ -98,11 +98,11 @@ def test_sync_reports_no_change(repo, monkeypatch, capsys):
 
 
 def test_sync_prints_warnings(repo, monkeypatch, capsys):
-    from tft.ingest import SyncResult
+    from pubs.ingest import SyncResult
 
     _entry(repo, "2027-x")
     monkeypatch.setattr(
-        "tft.ingest.Ingest.sync",
+        "pubs.ingest.Ingest.sync",
         lambda self, slug: SyncResult(changed=True, warnings=("year is now 2028",)),
     )
 
@@ -117,7 +117,7 @@ def test_add_passes_the_overrides_through(repo, monkeypatch):
         seen["overrides"] = overrides
         return repo
 
-    monkeypatch.setattr("tft.ingest.Ingest.add", fake_add)
+    monkeypatch.setattr("pubs.ingest.Ingest.add", fake_add)
 
     code = cli.main([
         "add", "thesis", "--overleaf", "abc", "--name", "x",
@@ -131,12 +131,12 @@ def test_add_passes_the_overrides_through(repo, monkeypatch):
 
 
 def test_add_reports_an_unreadable_field(repo, monkeypatch, capsys):
-    from tft.errors import ExtractError
+    from pubs.errors import ExtractError
 
     def fake_add(self, project_id, name, overrides=None, type="thesis"):
         raise ExtractError("could not read title; pass --title")
 
-    monkeypatch.setattr("tft.ingest.Ingest.add", fake_add)
+    monkeypatch.setattr("pubs.ingest.Ingest.add", fake_add)
 
     code = cli.main(["add", "thesis", "--overleaf", "abc", "--name", "x"])
 
@@ -151,7 +151,7 @@ def test_add_paper_passes_doi_name_and_no_kind(repo, monkeypatch):
         seen.update(doi=doi, name=name, kind=kind)
         return repo
 
-    monkeypatch.setattr("tft.ingest.Ingest.add_from_doi", fake_add_from_doi)
+    monkeypatch.setattr("pubs.ingest.Ingest.add_from_doi", fake_add_from_doi)
 
     code = cli.main(["add", "paper", "--doi", "10.1109/x", "--name", "autor-paper"])
 
@@ -166,7 +166,7 @@ def test_add_paper_passes_the_kind(repo, monkeypatch):
         seen["kind"] = kind
         return repo
 
-    monkeypatch.setattr("tft.ingest.Ingest.add_from_doi", fake_add_from_doi)
+    monkeypatch.setattr("pubs.ingest.Ingest.add_from_doi", fake_add_from_doi)
 
     code = cli.main([
         "add", "paper", "--doi", "10.1109/x", "--name", "x", "--kind", "journal",
@@ -199,12 +199,12 @@ def test_add_requires_its_source(repo):
 
 
 def test_add_paper_reports_registry_error(repo, monkeypatch, capsys):
-    from tft.errors import RegistryError
+    from pubs.errors import RegistryError
 
     def fake(self, doi, name, kind=None):
         raise RegistryError("no registry knows 10.1109/x; check the spelling")
 
-    monkeypatch.setattr("tft.ingest.Ingest.add_from_doi", fake)
+    monkeypatch.setattr("pubs.ingest.Ingest.add_from_doi", fake)
 
     assert cli.main(["add", "paper", "--doi", "10.1109/x", "--name", "x"]) == 1
     assert "check the spelling" in capsys.readouterr().err

@@ -2,8 +2,8 @@ import shutil
 
 import pytest
 
-from tft import latex
-from tft.errors import CompileError
+from pubs import latex
+from pubs.errors import CompileError
 
 DOC = "\\documentclass{article}\n\\begin{document}\nHello.\n\\end{document}\n"
 

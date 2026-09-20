@@ -1,9 +1,9 @@
 import pytest
 import yaml
 
-from tft import config
-from tft.catalog import Catalog
-from tft.errors import MissingField
+from pubs import config
+from pubs.catalog import Catalog
+from pubs.errors import MissingField
 
 MINIMAL = {
     "type": "thesis",

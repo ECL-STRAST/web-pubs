@@ -3,12 +3,12 @@ import shutil
 import pytest
 import yaml
 
-from tft import config
-from tft.catalog import Catalog
-from tft.doi import Record
-from tft.entry import PUBLICATION
-from tft.errors import BadValue, CompileError, ExtractError
-from tft.ingest import Ingest, Overrides
+from pubs import config
+from pubs.catalog import Catalog
+from pubs.doi import Record
+from pubs.entry import PUBLICATION
+from pubs.errors import BadValue, CompileError, ExtractError
+from pubs.ingest import Ingest, Overrides
 
 PROJECT = "698b41fa174f9aec00db94cb"
 SHA = "a3f19c2000000000000000000000000000000000"
@@ -18,7 +18,7 @@ SHA = "a3f19c2000000000000000000000000000000000"
 def repo(tmp_path):
     (tmp_path / "public" / "taxonomy").mkdir(parents=True)
     (tmp_path / "public" / "taxonomy" / "topics.yaml").write_text(yaml.safe_dump(["vr"]))
-    (tmp_path / "public" / "tft.toml").write_text(
+    (tmp_path / "public" / "pubs.toml").write_text(
         f'[paths]\nprivate = "{tmp_path / "private"}"\n'
     )
 
@@ -225,8 +225,8 @@ def test_recorded_mirror_is_a_url_not_a_local_path(repo):
 
 
 def test_mirror_base_override_is_honoured(repo):
-    (repo / "tft.toml").write_text(
-        (repo / "tft.toml").read_text() + 'mirror_base = "https://example.org/sources"\n'
+    (repo / "pubs.toml").write_text(
+        (repo / "pubs.toml").read_text() + 'mirror_base = "https://example.org/sources"\n'
     )
 
     folder = _add(repo, _ingest(repo))

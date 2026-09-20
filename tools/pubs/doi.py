@@ -17,7 +17,7 @@ from .errors import RegistryError
 
 CROSSREF = "https://api.crossref.org/works/"
 DATACITE = "https://api.datacite.org/dois/"
-USER_AGENT = "tft-catalog/0.1"
+USER_AGENT = "pubs-catalog/0.1"
 
 # How long a registry may take to connect and to answer each read: a stalled
 # registry is a broken connection, not a slow one, and must not hang the tool.

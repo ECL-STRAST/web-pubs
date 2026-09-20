@@ -1,7 +1,7 @@
 import pytest
 import yaml
 
-from tft import cli
+from pubs import cli
 
 MINIMAL = {
     "type": "thesis",
@@ -16,7 +16,7 @@ MINIMAL = {
 
 @pytest.fixture
 def repo(tmp_path, monkeypatch):
-    (tmp_path / "pyproject.toml").write_text("[project]\nname = 'tft'\n")
+    (tmp_path / "pyproject.toml").write_text("[project]\nname = 'pubs'\n")
     (tmp_path / "taxonomy").mkdir()
     (tmp_path / "taxonomy" / "topics.yaml").write_text(yaml.safe_dump(["biomechanics"]))
 

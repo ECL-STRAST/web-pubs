@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: "3.11"
       - run: python -m pip install -e .
-      - run: tft build
+      - run: pubs build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

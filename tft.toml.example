@@ -1,5 +1,0 @@
-# Copy to tft.toml (gitignored) when the private repo is not the sibling
-# directory ../docs-TFTs-private, or its public URL differs from the default.
-[paths]
-private = "../docs-TFTs-private"
-mirror_base = "https://github.com/ECL-STRAST/docs-TFTs-private/tree/main/sources"

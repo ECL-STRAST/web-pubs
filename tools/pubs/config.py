@@ -6,9 +6,9 @@ from pathlib import Path
 
 from .errors import BadValue, ConfigError
 
-CONFIG_FILE = "tft.toml"
-DEFAULT_PRIVATE = "../docs-TFTs-private"
-DEFAULT_MIRROR_BASE = "https://github.com/ECL-STRAST/docs-TFTs-private/tree/main/sources"
+CONFIG_FILE = "pubs.toml"
+DEFAULT_PRIVATE = "../web-pubs-private"
+DEFAULT_MIRROR_BASE = "https://github.com/ECL-STRAST/web-pubs-private/tree/main/sources"
 WORK_DIR = ".work"
 
 
@@ -21,7 +21,7 @@ class Config:
 
 
 def load(root: Path) -> Config:
-    """Read tft.toml if present, otherwise fall back to the sibling repo."""
+    """Read pubs.toml if present, otherwise fall back to the sibling repo."""
     toml = _read_toml(root)
     private = _private_path(root, toml)
     mirror_base = _mirror_base(toml)

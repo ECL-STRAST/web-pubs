@@ -3,8 +3,8 @@ from urllib.error import URLError
 
 import pytest
 
-from tft.doi import CROSSREF, DATACITE, TIMEOUT_SECONDS, fetch, get_json
-from tft.errors import RegistryError
+from pubs.doi import CROSSREF, DATACITE, TIMEOUT_SECONDS, fetch, get_json
+from pubs.errors import RegistryError
 
 CROSSREF_URL = CROSSREF + "10.1109/TVCG.2026.1234567"
 DATACITE_URL = DATACITE + "10.1109/TVCG.2026.1234567"

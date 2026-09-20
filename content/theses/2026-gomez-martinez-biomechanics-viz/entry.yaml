@@ -19,7 +19,7 @@ language: en
 overleaf:
   project_id: 69383a49689691250738bac6
   commit: 919a437ff1e6d5c1236b8c84a43d2ab965a36cea
-  mirror: https://github.com/ECL-STRAST/docs-TFTs-private/tree/main/sources/theses/2026-gomez-martinez-biomechanics-viz
+  mirror: https://github.com/ECL-STRAST/web-pubs-private/tree/main/sources/theses/2026-gomez-martinez-biomechanics-viz
 repos:
   code:
   - https://github.com/ECL-STRAST/libremotion-chloe

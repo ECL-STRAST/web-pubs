@@ -1,8 +1,8 @@
 import pytest
 import yaml
 
-from tft import entry, store
-from tft.errors import SchemaError
+from pubs import entry, store
+from pubs.errors import SchemaError
 
 MINIMAL = {
     "type": "thesis",

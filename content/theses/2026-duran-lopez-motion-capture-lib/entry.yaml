@@ -17,7 +17,7 @@ language: en
 overleaf:
   project_id: 69383a90e04c1b8b944b73af
   commit: 49081f7a9b5a25cbb97c872d1b4b3c18e7135f14
-  mirror: https://github.com/ECL-STRAST/docs-TFTs-private/tree/main/sources/theses/2026-duran-lopez-motion-capture-lib
+  mirror: https://github.com/ECL-STRAST/web-pubs-private/tree/main/sources/theses/2026-duran-lopez-motion-capture-lib
 repos:
   code:
   - https://github.com/ECL-STRAST/LibreMotion-Capture

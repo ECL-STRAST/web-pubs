@@ -1,0 +1,5 @@
+# Copy to pubs.toml (gitignored) when the private repo is not the sibling
+# directory ../web-pubs-private, or its public URL differs from the default.
+[paths]
+private = "../web-pubs-private"
+mirror_base = "https://github.com/ECL-STRAST/web-pubs-private/tree/main/sources"

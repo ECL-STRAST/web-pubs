@@ -1,4 +1,4 @@
-# docs-TFTs
+# web-pubs
 
 A catalog of the Bachelor's, Master's and PhD theses of the research group.
 Each entry holds its metadata, an English summary, the compiled PDF, links to
@@ -6,7 +6,7 @@ the attached code and docs repositories, and an optional presentation. The
 site is published from `main` to GitHub Pages.
 
 LaTeX sources and anything not cleared for publication live in the private
-repository `ECL-STRAST/docs-TFTs-private`. Presence in *this* repository is
+repository `ECL-STRAST/web-pubs-private`. Presence in *this* repository is
 what makes an entry public; there is no flag to get wrong.
 
 ## Layout
@@ -15,7 +15,7 @@ what makes an entry public; there is no flag to get wrong.
     content/publications/<year>-<slug>/ same shape, kind instead of degree;
                                       paper.pdf only if shareable
     taxonomy/topics.yaml            the controlled topic vocabulary
-    tools/tft/                      the tooling
+    tools/pubs/                      the tooling
     site/                           build output, gitignored
 
 ## Setup
@@ -24,7 +24,7 @@ what makes an entry public; there is no flag to get wrong.
     source .venv/bin/activate
     python -m pip install -e ".[dev]"
     export OVERLEAF_GIT_TOKEN=...
-    git clone git@github.com:ECL-STRAST/docs-TFTs-private.git ../docs-TFTs-private
+    git clone git@github.com:ECL-STRAST/web-pubs-private.git ../web-pubs-private
 
 `latexmk` and a TeX distribution are needed to add or sync entries, but not
 to build the site.
@@ -42,12 +42,12 @@ On Debian/Ubuntu:
 `texlive-full` also works if you'd rather not think about it.
 `python3-pygments` is required because `minted` shells out to it.
 
-`tft` compiles with `-shell-escape` for `minted`, which lets the document
+`pubs` compiles with `-shell-escape` for `minted`, which lets the document
 run shell commands during compilation. Only compile sources you trust.
 
 ## Adding a thesis
 
-    tft add thesis --overleaf <project-id> --name nieves-serrano-biomechanics-db
+    pubs add thesis --overleaf <project-id> --name nieves-serrano-biomechanics-db
 
 Title, author, year, degree, programme, supervisors, summary and keywords
 are read from the LaTeX source. The year becomes the slug's prefix, so
@@ -69,7 +69,7 @@ the site's filter; the extracted `keywords` are the thesis's own words,
 are displayed but never filtered, and are not checked against the
 vocabulary. Finally:
 
-    tft validate
+    pubs validate
 
 `validate` checks schema, topics, referenced files, and repo URL syntax.
 It never checks that a URL is reachable: CI holds no secrets and reaches
@@ -112,7 +112,7 @@ history.
 
 ### Keeping an entry current
 
-    tft sync <slug>
+    pubs sync <slug>
 
 Re-pulls from Overleaf, recompiles, and re-reads the metadata.
 `summary.md` is **derived from the abstract and is rewritten on every
@@ -125,7 +125,7 @@ working.
 
 ## Adding a paper
 
-    tft add paper --doi 10.1109/TVCG.2026.1234567 --name autor-mocap
+    pubs add paper --doi 10.1109/TVCG.2026.1234567 --name autor-mocap
 
 Title, authors in order, year, venue, keywords and the abstract (when
 the registry carries one) come from CrossRef, falling back to DataCite.
@@ -137,7 +137,7 @@ A paper has a `kind` — `conference`, `journal`, `poster`, `workshop`,
 degree is a thesis's. Pass `--kind journal` or replace the `CHANGE-ME`
 the command scaffolds; `validate` reports it until you do.
 
-Then replace the `CHANGE-ME` topic as with a thesis. `tft sync <slug>`
+Then replace the `CHANGE-ME` topic as with a thesis. `pubs sync <slug>`
 re-reads the registries and refreshes title, authors, year, venue,
 keywords and published; your own fields and `summary.md` are never touched.
 
@@ -152,13 +152,13 @@ citation itself is public knowledge and is not withheld.
 To change a field you own — a score, a photo, an image, a video — edit
 `content/theses/<slug>/entry.yaml` and run:
 
-    tft validate && tft build
+    pubs validate && pubs build
 
-Do **not** use `tft sync` for this. Sync re-pulls from Overleaf and
+Do **not** use `pubs sync` for this. Sync re-pulls from Overleaf and
 recompiles the LaTeX; it is for picking up changes to the thesis itself,
 not for applying your own edits.
 
 ## Other commands
 
-    tft sync <slug>     re-pull from Overleaf and recompile
-    tft build           render site/ locally
+    pubs sync <slug>     re-pull from Overleaf and recompile
+    pubs build           render site/ locally

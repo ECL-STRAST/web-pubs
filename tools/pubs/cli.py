@@ -7,7 +7,7 @@ from pathlib import Path
 from . import config
 from .catalog import Catalog
 from .entry import DEGREES, KINDS, PLACEHOLDER, THESIS
-from .errors import TftError
+from .errors import PubsError
 from .ingest import Ingest, Overrides
 from .site import SITE, Site
 
@@ -19,7 +19,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         return args.run(args)
-    except (TftError, OSError) as exc:
+    except (PubsError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
@@ -30,7 +30,7 @@ def find_root(start: Path) -> Path:
         if (folder / ROOT_MARKER).is_file():
             return folder
 
-    raise TftError(f"no {ROOT_MARKER} above {start}")
+    raise PubsError(f"no {ROOT_MARKER} above {start}")
 
 
 def _catalog() -> Catalog:
@@ -102,7 +102,7 @@ def _validate(args) -> int:
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="tft", description="Catalog tooling")
+    parser = argparse.ArgumentParser(prog="pubs", description="Catalog tooling")
     subs = parser.add_subparsers(dest="command", required=True)
 
     add = subs.add_parser("add", help="add an entry")

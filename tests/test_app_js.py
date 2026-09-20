@@ -4,11 +4,11 @@ from pathlib import Path
 
 import yaml
 
-from tft import config
-from tft.catalog import Catalog
-from tft.site import Site
+from pubs import config
+from pubs.catalog import Catalog
+from pubs.site import Site
 
-APP_JS = Path(__file__).parent.parent / "tools" / "tft" / "assets" / "app.js"
+APP_JS = Path(__file__).parent.parent / "tools" / "pubs" / "assets" / "app.js"
 
 MINIMAL = {
     "type": "thesis",

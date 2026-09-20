@@ -1,15 +1,15 @@
 """Every failure the tool reports, one class per cause."""
 
 
-class TftError(Exception):
+class PubsError(Exception):
     """Base for anything this tool raises."""
 
 
-class ConfigError(TftError):
-    """tft.toml is unreadable or malformed."""
+class ConfigError(PubsError):
+    """pubs.toml is unreadable or malformed."""
 
 
-class SchemaError(TftError):
+class SchemaError(PubsError):
     """An entry.yaml violates the schema."""
 
 
@@ -29,21 +29,21 @@ class UnknownTopic(SchemaError):
     """A topic is not listed in taxonomy/topics.yaml."""
 
 
-class OverleafError(TftError):
+class OverleafError(PubsError):
     """Cloning or pulling the Overleaf project failed."""
 
 
-class CompileError(TftError):
+class CompileError(PubsError):
     """The document could not be compiled."""
 
 
-class ExtractError(TftError):
+class ExtractError(PubsError):
     """A thesis's metadata could not be read from its LaTeX source."""
 
 
-class UnsafeOutputDir(TftError):
+class UnsafeOutputDir(PubsError):
     """--out names a directory that is not a previous build."""
 
 
-class RegistryError(TftError):
+class RegistryError(PubsError):
     """A DOI lookup failed: malformed DOI, unknown to both registries, or the network."""

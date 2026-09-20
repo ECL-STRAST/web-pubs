@@ -1,7 +1,7 @@
 import pytest
 
-from tft import entry
-from tft.errors import BadValue, MissingField, UnknownField
+from pubs import entry
+from pubs.errors import BadValue, MissingField, UnknownField
 
 MINIMAL = {
     "type": "thesis",

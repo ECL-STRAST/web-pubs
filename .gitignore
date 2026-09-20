@@ -1,7 +1,7 @@
 site/
 .work/
 .env
-tft.toml
+pubs.toml
 __pycache__/
 *.egg-info/
 .pytest_cache/

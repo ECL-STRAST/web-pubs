@@ -74,7 +74,7 @@ class Site:
         self._cfg = cfg
         self._catalog = catalog
         self._jinja = Environment(
-            loader=PackageLoader("tft", "templates"),
+            loader=PackageLoader("pubs", "templates"),
             autoescape=select_autoescape(["html"]),
         )
         self._jinja.filters["titlecase"] = titlecase
@@ -174,7 +174,7 @@ class Site:
 
     def _write_assets(self, out: Path) -> None:
         """Copied verbatim: assets are not templates and must not be rendered."""
-        source = resources.files("tft") / ASSETS
+        source = resources.files("pubs") / ASSETS
         dest = out / ASSETS
         dest.mkdir()
 
