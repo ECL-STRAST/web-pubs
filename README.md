@@ -1,6 +1,6 @@
 # web-pubs
 
-A catalog of the Bachelor's, Master's and PhD theses of the research group.
+A catalog of the theses and scientific publications of the research group.
 Each entry holds its metadata, an English summary, the compiled PDF, links to
 the attached code and docs repositories, and an optional presentation. The
 site is published from `main` to GitHub Pages.
