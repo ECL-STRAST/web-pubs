@@ -1,0 +1,32 @@
+type: publication
+title: 'Feasibility of Meta Quest 2 for tracking upper-limb movements under varying
+  field of view conditions: a pilot study'
+authors:
+- Vanina Costa
+- Rodrigo Garcia-Carmona
+- Cristina Sánchez
+- Eloy Urendes
+- Ana Rojo
+- Gisela Aragón
+- Clara Beatriz Sanz-Morère
+- Rafael Raya
+year: 2026
+kind: journal
+venue: Scientific Reports
+doi: 10.1038/s41598-026-59977-8
+published: '2026-07-01'
+topics:
+- biomechanics
+- vr
+language: en
+repos:
+  code:
+  - https://github.com/rgarciacarmona/VR-Quest2-UpperLimb-MoCap
+image: image.png
+keywords:
+- virtual reality
+- motion capture
+- accuracy
+- upper-limb
+- rehabilitation
+- dynamic movement
