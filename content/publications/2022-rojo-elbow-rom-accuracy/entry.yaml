@@ -1,0 +1,31 @@
+type: publication
+title: Accuracy study of the Oculus Touch v2 versus inertial sensor for a single-axis
+  rotation simulating the elbow’s range of motion
+authors:
+- Ana Rojo
+- Javier Cortina
+- Cristina Sánchez
+- Eloy Urendes
+- Rodrigo García-Carmona
+- Rafael Raya
+year: 2022
+kind: journal
+venue: Virtual Reality
+doi: 10.1007/s10055-022-00660-4
+published: '2022-05-28'
+topics:
+- vr
+- biomechanics
+- rehabilitation
+language: en
+repos:
+  code:
+  - https://github.com/ECL-STRAST/OculusEnlaza
+image: image.png
+keywords:
+- accuracy
+- Elbow
+- inertial measurement unit
+- range of motion
+- rehabilitation
+- virtual reality

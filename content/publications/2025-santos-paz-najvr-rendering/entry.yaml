@@ -1,0 +1,28 @@
+type: publication
+title: 'NajVR: low-latency plug-and-play remote rendering for interactive virtual
+  reality applications'
+authors:
+- José A. Santos-Paz
+- José J. Garcia Aranda
+- Manuel Alarcón Granero
+- Francisco J. J. Quintanilla
+- Pablo Perez-Tirador
+- Abraham Otero
+- Rodrigo Garcia-Carmona
+year: 2025
+kind: journal
+venue: Computing
+doi: 10.1007/s00607-025-01589-7
+published: '2025-11-20'
+topics:
+- vr
+- software-engineering
+language: en
+image: image.webp
+keywords:
+- virtual reality
+- remote rendering
+- cloud gaming
+- video encoding
+- low-latency
+- eye tracking

@@ -1,0 +1,37 @@
+type: publication
+title: 'Measuring Stress and Perceptions for a Virtual Reality–Based Pericardiocentesis
+  Procedure Simulation for Medical Training: Usability Study'
+authors:
+- Alberto Rubio-López
+- Rodrigo García Carmona
+- Laura Zarandieta Román
+- Alejandro Rubio Navas
+- Angel González-Pinto
+- Pablo Cardinal-Fernández
+year: 2025
+kind: journal
+venue: JMIR Serious Games
+doi: 10.2196/68515
+published: '2025-05-07'
+topics:
+- vr
+- medical-training
+language: en
+repos:
+  code:
+  - https://github.com/ECL-STRAST/VR-Pericardiocentesis
+  data:
+  - https://doi.org/10.6084/m9.figshare.26215184.v1
+  3D models:
+  - https://doi.org/10.6084/m9.figshare.26219135
+image: image.png
+keywords:
+- vr
+- pericardiocentesis simulation
+- usability assessment
+- heart rate variability
+- physiological stress
+- simulator sickness
+- pystem usability pcale
+- presence questionnaire
+- virtual reality

@@ -1,0 +1,35 @@
+type: publication
+title: 'Innovative approaches to pericardiocentesis training: a comparative study
+  of 3D-printed and virtual reality simulation models'
+authors:
+- Alberto Rubio-López
+- Rodrigo García-Carmona
+- Laura Zarandieta-Román
+- Alejandro Rubio-Navas
+- Ángel González-Pinto
+- Pablo Cardinal-Fernández
+year: 2025
+kind: journal
+venue: Advances in Simulation
+doi: 10.1186/s41077-025-00348-0
+published: '2025-04-04'
+topics:
+- vr
+- medical-training
+language: en
+repos:
+  code:
+  - https://github.com/ECL-STRAST/VR-Pericardiocentesis
+  data:
+  - https://doi.org/10.6084/m9.figshare.26215184.v1
+  3D models:
+  - https://doi.org/10.6084/m9.figshare.26219135
+video: https://youtu.be/sG3L4lXL51w
+keywords:
+- mental training
+- model building and simulation
+- three-dimensional imaging
+- virtual and augmented reality
+- cardiovascular models
+- field methods and training
+- virtual reality and simulation-based training in surgical education

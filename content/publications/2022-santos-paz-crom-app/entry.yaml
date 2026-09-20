@@ -1,0 +1,34 @@
+type: publication
+title: 'A novel virtual reality application for autonomous assessment of cervical
+  range of motion: development and reliability study'
+authors:
+- Jose Angel Santos-Paz
+- Álvaro Sánchez-Picot
+- Ana Rojo
+- Aitor Martín-Pintado-Zugasti
+- Abraham Otero
+- Rodrigo Garcia-Carmona
+year: 2022
+kind: journal
+venue: PeerJ
+doi: 10.7717/peerj.14031
+published: '2022-09-14'
+topics:
+- vr
+- biomechanics
+- rehabilitation
+language: en
+repos:
+  code:
+  - https://github.com/ECL-STRAST/VR-CROMAssessment
+  data:
+  - https://github.com/jsantospaz/uspceu_crom_vr_assessment
+video: https://youtu.be/QTs-b04VzLQ
+keywords:
+- cervical range of motion
+- virtual reality
+- reliability
+- compensation movement
+- virtual reality applications
+- head mounted display
+- telemedicine

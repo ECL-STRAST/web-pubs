@@ -1,0 +1,31 @@
+type: publication
+title: 'FarmDay: A Gamified Virtual Reality Neurorehabilitation Application for Upper
+  Limb Based on Activities of Daily Living'
+authors:
+- Ana Rojo
+- Jose Ángel Santos-Paz
+- Álvaro Sánchez-Picot
+- Rafael Raya
+- Rodrigo García-Carmona
+year: 2022
+kind: journal
+venue: Applied Sciences
+doi: 10.3390/app12147068
+published: '2022-07-13'
+topics:
+- vr
+- rehabilitation
+language: en
+repos:
+  code:
+  - https://github.com/ECL-STRAST/VR-FarmDay
+video: https://youtu.be/M4Zs9HhYMzI
+keywords:
+- activities of daily living
+- neurorehabilitation
+- real-time
+- remote
+- telerehabilitation
+- upper limb
+- bimanual training
+- virtual reality
