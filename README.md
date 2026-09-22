@@ -2,7 +2,8 @@
 
 A catalog of the theses and scientific publications of the research group.
 Each entry holds its metadata, an English summary, the compiled PDF, links to
-the attached code and docs repositories, and an optional presentation. The
+the attached code, docs and dataset repositories, and an optional
+presentation. The
 site is published from `main` to GitHub Pages.
 
 LaTeX sources and anything not cleared for publication live in the private
@@ -94,7 +95,7 @@ change to an existing one if you want the GitHub pages to update.
 | `video` | a YouTube or Vimeo URL, e.g. `https://vimeo.com/76979871` |
 | `author_github` | the author's GitHub profile, e.g. `https://github.com/bgomezm` |
 | `author_linkedin` | the author's LinkedIn profile, e.g. `https://www.linkedin.com/in/bgomezm` |
-| `repos`, `slides` | as before |
+| `repos`, `slides` | as before; `repos.data` links (a figshare DOI, a data repo) drive the site's "Has data" filter |
 
 `supervisors` is no longer hand-entered: it is read from the
 `\supervisor` macro and rewritten on every sync.

@@ -83,6 +83,7 @@ class Overleaf:
 class Repos:
     code: tuple[str, ...] = ()
     docs: str | None = None
+    data: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -209,7 +210,7 @@ def to_dict(entry: Entry) -> dict:
             mirror=entry.overleaf.mirror,
         )
 
-    repos = _put_all(code=list(entry.repos.code), docs=entry.repos.docs)
+    repos = _put_all(code=list(entry.repos.code), docs=entry.repos.docs, data=list(entry.repos.data))
     _put(out, "repos", repos)
     _put(out, "slides", entry.slides)
 
@@ -407,7 +408,11 @@ def _repos(raw: dict | None) -> Repos:
     if raw is None:
         return Repos()
 
-    return Repos(code=tuple(raw.get("code", ())), docs=raw.get("docs"))
+    return Repos(
+        code=tuple(raw.get("code", ())),
+        docs=raw.get("docs"),
+        data=tuple(raw.get("data", ())),
+    )
 
 
 def _put(out: dict, name: str, value: Any) -> None:

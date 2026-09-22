@@ -44,7 +44,7 @@ def test_app_reads_only_fields_the_record_provides(tmp_path):
 def test_app_binds_every_filter_control():
     source = APP_JS.read_text()
 
-    for control in ["q", "year", "degree", "kind", "topic", "code", "slides"]:
+    for control in ["q", "year", "degree", "kind", "topic", "code", "data"]:
         assert f'"{control}"' in source or f"'{control}'" in source
 
 
@@ -101,3 +101,15 @@ def test_app_searches_authors_and_venue():
 
     assert "e.authors" in source
     assert "e.venue" in source
+
+
+def test_app_filters_by_data_repo():
+    assert "e.has_data" in APP_JS.read_text()
+
+
+def test_app_sorts_by_title_on_request():
+    # Date is the default, the order index.json already arrives in.
+    source = APP_JS.read_text()
+
+    assert 'const SORTS = ["date", "title"]' in source
+    assert "localeCompare" in source

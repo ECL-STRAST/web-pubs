@@ -39,6 +39,30 @@ def test_optional_blocks_survive_the_round_trip():
     assert entry.to_dict(parsed) == data
 
 
+def test_repos_data_round_trips():
+    data = MINIMAL | {
+        "repos": {
+            "code": ["https://github.com/ECL-STRAST/VR-CROMAssessment"],
+            "data": [
+                "https://doi.org/10.6084/m9.figshare.26215184.v1",
+                "https://github.com/jsantospaz/uspceu_crom_vr_assessment",
+            ],
+        },
+    }
+
+    parsed = entry.from_dict("2027-x", data)
+
+    assert parsed.repos.data == (
+        "https://doi.org/10.6084/m9.figshare.26215184.v1",
+        "https://github.com/jsantospaz/uspceu_crom_vr_assessment",
+    )
+    assert entry.to_dict(parsed) == data
+
+
+def test_repos_without_data_is_empty():
+    assert entry.from_dict("2027-x", MINIMAL).repos.data == ()
+
+
 def test_unfinished_entry_is_valid():
     # No repos, no slides, no overleaf commit: the work is still in progress.
     parsed = entry.from_dict("2027-x", MINIMAL)

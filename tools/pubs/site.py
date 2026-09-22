@@ -38,6 +38,11 @@ def titlecase(text: str) -> str:
     return " ".join([words[0].capitalize(), *rest])
 
 
+def alphabetical(words) -> list[str]:
+    """Case-insensitive order; the entry's own order is not the display's."""
+    return sorted(words, key=str.casefold)
+
+
 def record(entry: Entry, has_doc: bool) -> dict:
     """The flat shape the client-side filter works with."""
     base = f"{ENTRIES}/{entry.slug}"
@@ -55,16 +60,16 @@ def record(entry: Entry, has_doc: bool) -> dict:
         "doi": f"{DOI_BASE}{entry.doi}" if entry.doi else None,
         "published": entry.published,
         "language": entry.language,
-        "topics": list(entry.topics),
+        "topics": alphabetical(entry.topics),
         "supervisors": list(entry.supervisors),
-        "keywords": list(entry.keywords),
+        "keywords": alphabetical(entry.keywords),
         "score": entry.score,
         "honours": entry.honours,
         "url": f"{base}/",
         "doc": f"{base}/{DOC_NAME[entry.type]}" if has_doc else None,
         "slides": f"{base}/{entry.slides}" if entry.slides else None,
         "has_code": bool(entry.repos.code),
-        "has_slides": bool(entry.slides),
+        "has_data": bool(entry.repos.data),
         "summary": _teaser(entry.summary),
     }
 

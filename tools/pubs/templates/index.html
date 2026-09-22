@@ -36,8 +36,14 @@
     {% for topic in topics %}<option>{{ topic }}</option>{% endfor %}
   </select>
   <label><input type="checkbox" id="code"> Has code</label>
-  <label><input type="checkbox" id="slides"> Has slides</label>
+  <label><input type="checkbox" id="data"> Has data</label>
 </form>
+
+<div id="sort" aria-label="Sort">
+  <span>Sort by</span>
+  <button id="sort-date" class="active">Date</button>
+  <button id="sort-title">Title</button>
+</div>
 
 <p id="count" role="status"></p>
 <ul id="results"></ul>

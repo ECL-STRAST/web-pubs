@@ -59,10 +59,10 @@
   {% endif %}
 
   {# The group keeps the reader on the same half of the catalog. #}
-  <p class="topics">{% for topic in entry.topics %}<a href="../../?group={{ entry.type }}&topic={{ topic|urlencode }}">{{ topic }}</a>{% endfor %}</p>
+  <p class="topics">{% for topic in entry.topics|sort(case_sensitive=False) %}<a href="../../?group={{ entry.type }}&topic={{ topic|urlencode }}">{{ topic }}</a>{% endfor %}</p>
 
   {% if entry.keywords %}
-  <p class="keywords">{% for word in entry.keywords %}<span>{{ word }}</span>{% endfor %}</p>
+  <p class="keywords">{% for word in entry.keywords|sort(case_sensitive=False) %}<span>{{ word }}</span>{% endfor %}</p>
   {% endif %}
 
   {# summary.md is repo content, reviewed via git like this template;
@@ -77,11 +77,12 @@
     {% if doi_url %}<li><a href="{{ doi_url }}">Published version (DOI)</a></li>{% endif %}
   </ul>
 
-  {% if entry.repos.code or entry.repos.docs %}
+  {% if entry.repos.code or entry.repos.docs or entry.repos.data %}
   <h2>Repositories</h2>
   <ul>
     {% for url in entry.repos.code %}<li><a href="{{ url }}">Code: {{ url }}</a></li>{% endfor %}
     {% if entry.repos.docs %}<li><a href="{{ entry.repos.docs }}">Docs: {{ entry.repos.docs }}</a></li>{% endif %}
+    {% for url in entry.repos.data %}<li><a href="{{ url }}">Data: {{ url }}</a></li>{% endfor %}
   </ul>
   {% endif %}
 </article>

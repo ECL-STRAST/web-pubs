@@ -140,6 +140,25 @@ def test_wellformed_repo_url_is_not_a_problem(repo):
     assert _catalog(repo).problems() == []
 
 
+def test_malformed_data_url_is_a_problem(repo):
+    _add(repo, "2027-x", data=MINIMAL | {"repos": {"data": ["not-a-url"]}})
+
+    problems = _catalog(repo).problems()
+
+    assert any("2027-x" in p and "not-a-url" in p for p in problems)
+
+
+def test_wellformed_data_url_is_not_a_problem(repo):
+    _add(repo, "2027-x", data=MINIMAL | {
+        "repos": {
+            "code": ["https://github.com/ECL-STRAST/example"],
+            "data": ["https://doi.org/10.6084/m9.figshare.26215184.v1"],
+        },
+    })
+
+    assert _catalog(repo).problems() == []
+
+
 def test_entry_without_repos_is_not_a_problem(repo):
     _add(repo, "2027-x")
 

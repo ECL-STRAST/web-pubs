@@ -117,7 +117,7 @@ class Catalog:
             if not store.exists(folder / name):
                 found.append(f"{folder.name}: missing {name}")
 
-        for url in (*entry.repos.code, entry.repos.docs):
+        for url in (*entry.repos.code, entry.repos.docs, *entry.repos.data):
             if url and not _is_https_url(url):
                 found.append(f"{folder.name}: malformed repo URL: {url}")
 

@@ -85,14 +85,14 @@ def test_index_json_matches_the_golden_record(repo):
         "language": "en",
         "topics": ["biomechanics", "rehabilitation"],
         "supervisors": ["Rodrigo Garcia Carmona"],
-        "keywords": ["motion capture", "c3d"],
+        "keywords": ["c3d", "motion capture"],
         "score": 10,
         "honours": True,
         "url": "entries/2027-nieves-serrano-biomechanics-db/",
         "doc": "entries/2027-nieves-serrano-biomechanics-db/thesis.pdf",
         "slides": "entries/2027-nieves-serrano-biomechanics-db/slides.pdf",
         "has_code": True,
-        "has_slides": True,
+        "has_data": False,
         "summary": "Stores gait data.",
     }]
 
@@ -103,7 +103,7 @@ def test_unfinished_entry_has_false_flags(repo):
     records = json.loads((_build(repo) / "index.json").read_text())
 
     assert records[0]["has_code"] is False
-    assert records[0]["has_slides"] is False
+    assert records[0]["has_data"] is False
     assert records[0]["slides"] is None
     assert records[0]["programme"] is None
 
@@ -231,6 +231,59 @@ def test_entry_page_lists_keywords(repo):
     page = (_build(repo) / "entries" / "2027-x" / "index.html").read_text()
 
     assert "motion capture" in page
+
+
+def test_the_record_lists_topics_and_keywords_in_alphabetical_order(repo):
+    # Display order only: entry.yaml keeps whatever order it has.
+    _entry(repo, "2027-x", FULL | {
+        "topics": ["vr", "biomechanics", "rehabilitation"],
+        "keywords": ["Elbow", "accuracy", "c3d"],
+    })
+
+    record = json.loads((_build(repo) / "index.json").read_text())[0]
+
+    assert record["topics"] == ["biomechanics", "rehabilitation", "vr"]
+    assert record["keywords"] == ["accuracy", "c3d", "Elbow"]
+
+
+def test_the_entry_page_lists_topics_and_keywords_in_alphabetical_order(repo):
+    _entry(repo, "2027-x", FULL | {
+        "topics": ["vr", "biomechanics"],
+        "keywords": ["Zebra", "accuracy"],
+    })
+
+    page = (_build(repo) / "entries" / "2027-x" / "index.html").read_text()
+
+    assert page.index(">biomechanics</a>") < page.index(">vr</a>")
+    assert page.index("<span>accuracy</span>") < page.index("<span>Zebra</span>")
+
+
+DATA_URL = "https://doi.org/10.6084/m9.figshare.26215184.v1"
+
+
+def test_record_flags_the_data_repo(repo):
+    _entry(repo, "2027-x", FULL | {"repos": {**FULL["repos"], "data": [DATA_URL]}})
+
+    record = json.loads((_build(repo) / "index.json").read_text())[0]
+
+    assert record["has_data"] is True
+
+
+def test_entry_page_lists_the_data_repo(repo):
+    _entry(repo, "2027-x", FULL | {"repos": {"data": [DATA_URL]}})
+
+    page = (_build(repo) / "entries" / "2027-x" / "index.html").read_text()
+
+    assert f'href="{DATA_URL}"' in page
+
+
+def test_a_repo_block_of_only_data_still_round_trips(repo):
+    _entry(repo, "2027-x", FULL | {"repos": {"data": [DATA_URL]}})
+
+    record = json.loads((_build(repo) / "index.json").read_text())[0]
+
+    assert record["has_code"] is False
+    assert record["has_data"] is True
 
 
 def test_entry_page_shows_the_portrait_when_present(repo):
@@ -484,6 +537,24 @@ def test_index_page_offers_the_group_buttons(repo):
     assert 'id="group-publication"' in page
     assert "Theses (1)" in page
     assert "Publications (1)" in page
+
+
+def test_index_page_filters_by_data_not_slides(repo):
+    _entry(repo, "2027-x", MINIMAL)
+
+    page = (_build(repo) / "index.html").read_text()
+
+    assert 'id="data"' in page
+    assert 'id="slides"' not in page
+
+
+def test_index_page_offers_the_sort_buttons(repo):
+    _entry(repo, "2027-x", MINIMAL)
+
+    page = (_build(repo) / "index.html").read_text()
+
+    assert 'id="sort-date"' in page
+    assert 'id="sort-title"' in page
 
 
 def test_index_page_has_no_type_select(repo):

@@ -22,7 +22,7 @@ h1 { font-size: 1.6rem; margin-bottom: .2rem; }
 
 /* The split of the catalog, right under the rule and above the filters. */
 #groups { display: flex; gap: .5rem; margin: 1rem 0 0; }
-#groups button {
+#groups button, #sort button {
   padding: .4rem .9rem;
   border: 1px solid var(--line);
   border-radius: 1rem;
@@ -31,8 +31,12 @@ h1 { font-size: 1.6rem; margin-bottom: .2rem; }
   color: var(--dim);
   cursor: pointer;
 }
-#groups button:hover { color: var(--ecl-blue); border-color: var(--ecl-blue); }
-#groups button.active { background: var(--ecl-blue); border-color: var(--ecl-blue); color: #fff; }
+#groups button:hover, #sort button:hover { color: var(--ecl-blue); border-color: var(--ecl-blue); }
+#groups button.active, #sort button.active { background: var(--ecl-blue); border-color: var(--ecl-blue); color: #fff; }
+
+/* The reader's ask against the catalog's own newest-first order. */
+#sort { display: flex; align-items: center; gap: .5rem; margin: 0 0 1rem; }
+#sort span { font-size: .9rem; color: var(--dim); }
 
 #filters { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.5rem 0 1rem; }
 #filters input[type=search] { flex: 1 1 16rem; }

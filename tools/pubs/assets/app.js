@@ -1,12 +1,16 @@
 // Filters the catalog in the browser. No framework, no network beyond
 // index.json, so a copy of this directory works offline.
 
-const CONTROLS = ["q", "year", "degree", "kind", "topic", "code", "slides"];
+const CONTROLS = ["q", "year", "degree", "kind", "topic", "code", "data"];
 
 // The two halves of the catalog; the first is the default group.
 const GROUPS = ["thesis", "publication"];
 
+// Date is the index.json order, newest first; title is the reader's ask.
+const SORTS = ["date", "title"];
+
 let entries = [];
+let sort = "date";
 
 // The active group lives in the URL, so shared links and topic clicks
 // land on the same half. A pre-split ?type=... link names a group too.
@@ -32,7 +36,7 @@ function matches(e, f) {
   if (f.kind && e.kind !== f.kind) return false;
   if (f.topic && !e.topics.includes(f.topic)) return false;
   if (f.code && !e.has_code) return false;
-  if (f.slides && !e.has_slides) return false;
+  if (f.data && !e.has_data) return false;
   if (!f.q) return true;
 
   const haystack = [e.title, e.authors.join(" "), e.summary, e.programme, e.venue,
@@ -77,6 +81,22 @@ function showGroupControls() {
   document.getElementById("kind").hidden = group !== "publication";
 }
 
+function sorted(shown) {
+  if (sort === "title") {
+    return shown.slice().sort((a, b) =>
+      a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
+  }
+  return shown;
+}
+
+function setSort(next) {
+  sort = next;
+  SORTS.forEach((k) => {
+    document.getElementById(`sort-${k}`).classList.toggle("active", k === next);
+  });
+  render();
+}
+
 function render() {
   const f = {};
   CONTROLS.forEach((id) => {
@@ -86,7 +106,7 @@ function render() {
   });
 
   const inGroup = entries.filter((e) => e.type === group);
-  const shown = inGroup.filter((e) => matches(e, f));
+  const shown = sorted(inGroup.filter((e) => matches(e, f)));
   document.getElementById("results").innerHTML = shown.map(card).join("");
   document.getElementById("count").textContent =
     `${shown.length} of ${inGroup.length} entries`;
@@ -118,6 +138,9 @@ fetch("index.json")
     });
     GROUPS.forEach((g) => {
       document.getElementById(`group-${g}`).addEventListener("click", () => setGroup(g));
+    });
+    SORTS.forEach((k) => {
+      document.getElementById(`sort-${k}`).addEventListener("click", () => setSort(k));
     });
 
     showGroupControls();
