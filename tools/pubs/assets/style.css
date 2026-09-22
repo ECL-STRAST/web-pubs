@@ -63,6 +63,14 @@ h1 { font-size: 1.6rem; margin-bottom: .2rem; }
 header { display: flex; align-items: center; gap: .75rem; }
 header img { width: 36px; height: 36px; }
 header h1 { margin: 0; }
+header { flex-wrap: wrap; }
+
+/* The group website's menu, the same on both sites. */
+.site-nav { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin-left: auto; font-size: .95rem; }
+.site-nav a { color: var(--dim); text-decoration: none; padding: .15rem 0; border-bottom: 2px solid transparent; }
+.site-nav a:hover { color: var(--ecl-blue); }
+.site-nav a.active { color: var(--ecl-blue); border-bottom-color: var(--ecl-blue); }
+@media (max-width: 36rem) { .site-nav { margin-left: 0; width: 100%; } }
 
 .brand { margin: 0; font-size: 1.6rem; font-weight: 700; }
 .brand a { color: var(--ink); text-decoration: none; }
