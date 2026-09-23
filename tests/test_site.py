@@ -630,3 +630,21 @@ def test_entry_page_topic_link_carries_the_group(repo):
     page = (_build(repo) / "entries" / "2026-x" / "index.html").read_text()
 
     assert "?group=publication&topic=biomechanics" in page
+
+
+def test_pages_link_back_to_the_group_website(repo):
+    _entry(repo, "2027-x", FULL)
+
+    out = _build(repo)
+    index = (out / "index.html").read_text()
+    entry = (out / "entries" / "2027-x" / "index.html").read_text()
+
+    for page in (index, entry):
+        assert 'class="site-nav"' in page
+        assert 'href="/"' in page
+        assert 'href="/people/"' in page
+        assert 'href="/research/"' in page
+
+    # The catalog is the website's Publications section.
+    assert '<a href="./" class="active" aria-current="page">Publications</a>' in index
+    assert '<a href="../../" class="active" aria-current="page">Publications</a>' in entry

@@ -1,0 +1,6 @@
+{# The group website's menu. The catalog is its Publications section, so
+   it is always the active item here. `home` is the catalog's root. #}
+<nav class="site-nav" aria-label="Site">
+  {% for title, path in group_nav %}<a href="{{ group_site }}{{ path }}">{{ title }}</a>
+  {% endfor %}<a href="{{ home }}" class="active" aria-current="page">Publications</a>
+</nav>

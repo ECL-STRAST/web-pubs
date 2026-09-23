@@ -21,6 +21,12 @@ ASSETS = "assets"
 
 SUMMARY_LIMIT = 300
 
+# The group website (ECL-STRAST/ecl-strast.github.io) is served from the
+# root of the same GitHub Pages domain; the catalog is its Publications
+# section, so the header links back to the website's other sections.
+GROUP_SITE = "/"
+GROUP_NAV = (("Home", ""), ("News", "news/"), ("People", "people/"), ("Research", "research/"))
+
 # Spanish connectives stay lowercase inside a programme name, except
 # when the name starts with one.
 MINOR_WORDS = ("en", "de", "del", "la", "el", "los", "las", "y", "e")
@@ -83,6 +89,7 @@ class Site:
             autoescape=select_autoescape(["html"]),
         )
         self._jinja.filters["titlecase"] = titlecase
+        self._jinja.globals.update(group_site=GROUP_SITE, group_nav=GROUP_NAV)
 
     def build(self, out: Path) -> None:
         """Render everything. The output directory is rebuilt from scratch."""
