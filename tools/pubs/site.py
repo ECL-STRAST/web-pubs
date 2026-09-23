@@ -1,5 +1,6 @@
 """Renders the catalog into a static site."""
 
+import hashlib
 import json
 import shutil
 from importlib import resources
@@ -89,7 +90,9 @@ class Site:
             autoescape=select_autoescape(["html"]),
         )
         self._jinja.filters["titlecase"] = titlecase
-        self._jinja.globals.update(group_site=GROUP_SITE, group_nav=GROUP_NAV)
+        self._jinja.globals.update(
+            group_site=GROUP_SITE, group_nav=GROUP_NAV, asset_version=_asset_version(),
+        )
 
     def build(self, out: Path) -> None:
         """Render everything. The output directory is rebuilt from scratch."""
@@ -192,6 +195,21 @@ class Site:
 
         for asset in source.iterdir():
             shutil.copyfile(asset, dest / asset.name)
+
+
+def _asset_version() -> str:
+    """A digest of the assets, appended to their URLs as ?v=...
+
+    Pages lets browsers cache files for ten minutes; without it a fresh
+    page arrives with a stale stylesheet after every change.
+    """
+    digest = hashlib.sha256()
+
+    for asset in sorted(resources.files("pubs").joinpath(ASSETS).iterdir(), key=lambda a: a.name):
+        digest.update(asset.name.encode())
+        digest.update(asset.read_bytes())
+
+    return digest.hexdigest()[:10]
 
 
 def _teaser(summary: str) -> str:

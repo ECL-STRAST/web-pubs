@@ -1,4 +1,5 @@
 import json
+import re
 
 import pytest
 import yaml
@@ -648,3 +649,15 @@ def test_pages_link_back_to_the_group_website(repo):
     # The catalog is the website's Publications section.
     assert '<a href="./" class="active" aria-current="page">Publications</a>' in index
     assert '<a href="../../" class="active" aria-current="page">Publications</a>' in entry
+
+
+def test_asset_links_carry_a_version_that_follows_their_content(repo):
+    _entry(repo, "2027-x", FULL)
+
+    out = _build(repo)
+    index = (out / "index.html").read_text()
+    entry = (out / "entries" / "2027-x" / "index.html").read_text()
+
+    version = re.search(r'href="assets/style\.css\?v=([0-9a-f]{10})"', index).group(1)
+    assert f'src="assets/app.js?v={version}"' in index
+    assert f'href="../../assets/style.css?v={version}"' in entry
